@@ -1,6 +1,5 @@
 package com.example.bebegim.screens
 
-//import androidx.compose.material.icons.filled.Mic
 import androidx.compose.animation.core.StartOffset
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -26,7 +25,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,7 +34,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -51,10 +48,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.bebegim.R
 import com.example.bebegim.model.ChatMessage
 import com.example.bebegim.model.MessageType
+import com.example.bebegim.ui.theme.Poppins
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -80,13 +80,38 @@ fun ChatbotScreen(
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "AI Asistan",
+                        fontFamily = Poppins,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Geri"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Msg
+            // Messages
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
@@ -118,37 +143,35 @@ fun ChatbotScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 tonalElevation = 4.dp,
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
                 color = MaterialTheme.colorScheme.surface
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     OutlinedTextField(
                         value = inputText.value,
                         onValueChange = { inputText.value = it },
                         placeholder = {
-                            if (inputText.value.isEmpty()) {
-                                Text("Herhangi bir şey sorun")
-                            }
+                            Text("Herhangi bir şey sorun")
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(16.dp)),
+                            .clip(RoundedCornerShape(24.dp)),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = Color.Transparent,
                             focusedBorderColor = Color.Transparent,
                             disabledBorderColor = Color.Transparent,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                         )
                     )
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
                     // Send Button
                     IconButton(
@@ -182,7 +205,7 @@ fun ChatbotScreen(
                                         userMessage.contains("acil", ignoreCase = true) ||
                                                 userMessage.contains("acil durum", ignoreCase = true) ||
                                                 userMessage.contains("ambulans", ignoreCase = true) ->
-                                            "Eğer acil bir durum yaşıyorsanız, lütfen hemen 112’yi arayın. Nefes alma güçlüğü, morarmış dudaklar veya tepkisizlik gibi durumlar acil müdahale gerektirir."
+                                            "Eğer acil bir durum yaşıyorsanız, lütfen hemen 112'yi arayın. Nefes alma güçlüğü, morarmış dudaklar veya tepkisizlik gibi durumlar acil müdahale gerektirir."
 
                                         else ->
                                             "\"$userMessage\" hakkında bir şey sorduğunuzu anlıyorum. Bu konuyla ilgili bebeğinizin bakımı hakkında daha özel bilgiler vermemi ister misiniz?"
@@ -209,7 +232,6 @@ fun ChatbotScreen(
     }
 }
 
-
 @Composable
 fun ChatBubble(message: ChatMessage) {
     Row(
@@ -224,8 +246,8 @@ fun ChatBubble(message: ChatMessage) {
                     RoundedCornerShape(
                         topStart = 16.dp,
                         topEnd = 16.dp,
-                        bottomStart = if (message.type == MessageType.SENT) 16.dp else 0.dp,
-                        bottomEnd = if (message.type == MessageType.SENT) 0.dp else 16.dp
+                        bottomStart = if (message.type == MessageType.SENT) 16.dp else 4.dp,
+                        bottomEnd = if (message.type == MessageType.SENT) 4.dp else 16.dp
                     )
                 )
                 .background(
@@ -234,14 +256,15 @@ fun ChatBubble(message: ChatMessage) {
                     else
                         MaterialTheme.colorScheme.secondaryContainer
                 )
-                .padding(12.dp)
+                .padding(16.dp)
         ) {
             Text(
                 text = message.content,
                 color = if (message.type == MessageType.SENT)
                     MaterialTheme.colorScheme.onPrimary
                 else
-                    MaterialTheme.colorScheme.onSecondaryContainer
+                    MaterialTheme.colorScheme.onSecondaryContainer,
+                style = MaterialTheme.typography.bodyMedium
             )
         }
     }
@@ -250,40 +273,45 @@ fun ChatBubble(message: ChatMessage) {
 @Composable
 fun TypingIndicator() {
     Row(
-        modifier = Modifier
-            .widthIn(max = 100.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.secondaryContainer)
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start
     ) {
-        repeat(3) {
-            val infiniteTransition = rememberInfiniteTransition(label = "typing")
-            val alpha by infiniteTransition.animateFloat(
-                initialValue = 0.2f,
-                targetValue = 1f,
-                animationSpec = infiniteRepeatable(
-                    animation = keyframes {
-                        durationMillis = 1000
-                        0.2f at 0
-                        1f at 500
-                        0.2f at 1000
-                    },
-                    initialStartOffset = StartOffset(it * 100)
-                ),
-                label = "typing dot"
-            )
+        Row(
+            modifier = Modifier
+                .widthIn(max = 100.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            repeat(3) { index ->
+                val infiniteTransition = rememberInfiniteTransition(label = "typing")
+                val alpha by infiniteTransition.animateFloat(
+                    initialValue = 0.2f,
+                    targetValue = 1f,
+                    animationSpec = infiniteRepeatable(
+                        animation = keyframes {
+                            durationMillis = 1000
+                            0.2f at 0
+                            1f at 500
+                            0.2f at 1000
+                        },
+                        initialStartOffset = StartOffset(index * 100)
+                    ),
+                    label = "typing dot"
+                )
 
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .clip(CircleShape)
-                    .background(
-                        MaterialTheme.colorScheme.onSecondaryContainer
-                            .copy(alpha = alpha)
-                    )
-            )
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(
+                            MaterialTheme.colorScheme.onSecondaryContainer
+                                .copy(alpha = alpha)
+                        )
+                )
+            }
         }
     }
 }
