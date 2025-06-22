@@ -1,12 +1,6 @@
 package com.example.bebegim.ui.components
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-//import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.outlined.AddCircle
-//import androidx.compose.material.icons.outlined.Assessment
+
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
