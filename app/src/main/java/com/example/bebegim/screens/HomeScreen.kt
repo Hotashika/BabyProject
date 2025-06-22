@@ -143,7 +143,7 @@ fun HomeScreen(
             // Live Video
             Text(
                 text = "Video",
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge)
             // Separator line above video
             Box(
                 modifier = Modifier
@@ -270,4 +270,4 @@ fun VitalCard(vital: VitalData, modifier: Modifier = Modifier) {
         }
     }
 }
-}
+
