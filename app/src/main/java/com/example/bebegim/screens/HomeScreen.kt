@@ -43,9 +43,11 @@ import androidx.compose.ui.unit.sp
 import com.example.bebegim.data.GetThermalData
 import com.example.bebegim.model.VitalData
 import com.example.bebegim.model.VitalType
-import com.example.bebegim.ui.components.BottomNavBar
 import kotlinx.coroutines.delay
 import com.example.bebegim.R
+import com.example.bebegim.ui.components.BottomNavBar
+import com.example.bebegim.ui.theme.DarkPastelBlue
+import com.example.bebegim.ui.theme.PastelBlueWhite
 import com.example.bebegim.ui.theme.Poppins
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,9 +82,8 @@ fun HomeScreen(
 
     val colorScheme = MaterialTheme.colorScheme
     val isDark = isSystemInDarkTheme()
-
     Scaffold(
-        containerColor = colorScheme.background,
+        containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
         topBar = {
             TopAppBar(
                 title = {
@@ -159,7 +160,7 @@ fun HomeScreen(
             }
 
             // Extra space between video and vitals
-            Spacer(modifier = Modifier.height((0.2).dp))
+            Spacer(modifier = Modifier.height(0.2.dp))
 
             // Baby info header
             Text(
@@ -175,10 +176,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(
-                        if (isDark) Color(0x592C2C2E)
-                        else Color(0xFFF2F2F7)
-                    )
+                    .background(colorScheme.surfaceVariant.copy(alpha = 0.6f))
                     .padding(10.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -186,7 +184,7 @@ fun HomeScreen(
                 VitalCard(vital = vitals[1], modifier = Modifier.weight(1f)) // SLEEP
             }
 
-            // Baby info header
+            // Environment info header
             Text(
                 text = "Ortam Bilgileri",
                 fontFamily = Poppins,
@@ -200,10 +198,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(
-                        if (isDark) Color(0x592C2C2E)
-                        else Color(0xFFF2F2F7)
-                    )
+                    .background(colorScheme.surfaceVariant.copy(alpha = 0.6f))
                     .padding(10.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -217,42 +212,49 @@ fun HomeScreen(
                 VitalCard(vital = vitals[4], modifier = Modifier.fillMaxWidth()) // CO2
             }
 
-            Spacer(modifier = Modifier.height((5).dp))
+            Spacer(modifier = Modifier.height(5.dp))
         }
     }
 }
 
 @Composable
 fun VitalCard(vital: VitalData, modifier: Modifier = Modifier) {
-    val isDark = isSystemInDarkTheme()
+    val colorScheme = MaterialTheme.colorScheme
 
     Card(
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isDark) Color(0x703A3A3C)
-            else Color.White
+            containerColor = colorScheme.surfaceVariant
         ),
         modifier = modifier.height(110.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = vital.type.displayName,
-                style = MaterialTheme.typography.titleSmall,
-                color = if (isDark) Color(0xFFAAAAAA) else Color(0xFF666666)
+                style = MaterialTheme.typography.labelMedium,
+                color = colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                fontFamily = Poppins,
+                fontWeight = FontWeight.Bold
             )
             Text(
                 text = vital.value,
                 style = MaterialTheme.typography.headlineSmall,
-                color = if (isDark) Color.White else Color(0xFF1C1C1E)
+                color = colorScheme.primary,
+                fontFamily = Poppins,
+                fontWeight = FontWeight.Medium
             )
             Text(
                 text = vital.status,
                 style = MaterialTheme.typography.bodySmall,
-                color = if (isDark) Color(0xFF999999) else Color(0xFF888888)
+                color = colorScheme.secondary,
+                fontFamily = Poppins,
+                fontWeight = FontWeight.Light
             )
         }
     }

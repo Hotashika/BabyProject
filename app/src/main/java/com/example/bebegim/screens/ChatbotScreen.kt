@@ -6,6 +6,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,6 +55,8 @@ import androidx.compose.ui.unit.sp
 import com.example.bebegim.R
 import com.example.bebegim.model.ChatMessage
 import com.example.bebegim.model.MessageType
+import com.example.bebegim.ui.theme.DarkPastelBlue
+import com.example.bebegim.ui.theme.PastelBlueWhite
 import com.example.bebegim.ui.theme.Poppins
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -78,8 +81,9 @@ fun ChatbotScreen(
             )
         )
     }
-
+    val isDark = isSystemInDarkTheme()
     Scaffold(
+        containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
         topBar = {
             TopAppBar(
                 title = {
@@ -99,7 +103,7 @@ fun ChatbotScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
