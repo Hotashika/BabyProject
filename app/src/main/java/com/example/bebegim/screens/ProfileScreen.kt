@@ -1,47 +1,15 @@
 package com.example.bebegim.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -51,9 +19,7 @@ import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
 import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.components.SettingsItem
-import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     onNavigateBack: () -> Unit,
@@ -62,27 +28,8 @@ fun ProfileScreen(
     onLogout: () -> Unit
 ) {
     val authViewModel: AuthViewModel = viewModel()
-    val errorMessage = authViewModel.errorMessage
 
     Scaffold(
-        // Unnecessary
-
-        /*topBar = {
-            TopAppBar(
-                title = { Text("Profil") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Geri")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        },*/
-
         bottomBar = {
             BottomNavBar(
                 currentRoute = "profile",
@@ -101,17 +48,14 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ProfileHeader()
-
             Divider(modifier = Modifier.padding(vertical = 16.dp))
-
             BabyInformation()
-
             Divider(modifier = Modifier.padding(vertical = 16.dp))
-
             SettingsSection(
                 authViewModel = authViewModel,
                 onNavigateBack = onNavigateBack,
-                onLogout = onLogout
+                onLogout = onLogout,
+                onNavigateToChatbot = onNavigateToChatbot // BURAYA EKLENDİ
             )
         }
     }
@@ -136,7 +80,6 @@ fun ProfileHeader() {
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
-
             FloatingActionButton(
                 onClick = { /* TODO: Profil resmini düzenle */ },
                 modifier = Modifier
@@ -151,22 +94,17 @@ fun ProfileHeader() {
                 )
             }
         }
-
         Spacer(modifier = Modifier.height(16.dp))
-
         Text(
             text = "Ayşe Yılmaz",
             style = MaterialTheme.typography.headlineMedium
         )
-
         Text(
             text = "ayse@example.com",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-
         Spacer(modifier = Modifier.height(8.dp))
-
         Surface(
             color = MaterialTheme.colorScheme.secondaryContainer,
             shape = MaterialTheme.shapes.small
@@ -192,9 +130,7 @@ fun BabyInformation() {
             text = "Bebek Bilgileri",
             style = MaterialTheme.typography.titleLarge
         )
-
         Spacer(modifier = Modifier.height(16.dp))
-
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -210,16 +146,12 @@ fun BabyInformation() {
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
-
                     Spacer(modifier = Modifier.width(8.dp))
-
                     Text(
                         text = "Mehmet Yılmaz",
                         style = MaterialTheme.typography.titleMedium
                     )
-
                     Spacer(modifier = Modifier.weight(1f))
-
                     IconButton(onClick = { /* TODO: Bebek bilgilerini düzenle */ }) {
                         Icon(
                             painter = painterResource(id = R.drawable.edit_24),
@@ -227,49 +159,23 @@ fun BabyInformation() {
                         )
                     }
                 }
-
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    InfoItem(
-                        label = "Yaş",
-                        value = "3 ay"
-                    )
-
-                    InfoItem(
-                        label = "Doğum Tarihi",
-                        value = "10 Şubat 2023"
-                    )
-
-                    InfoItem(
-                        label = "Cinsiyet",
-                        value = "Erkek"
-                    )
+                    InfoItem(label = "Yaş", value = "3 ay")
+                    InfoItem(label = "Doğum Tarihi", value = "10 Şubat 2023")
+                    InfoItem(label = "Cinsiyet", value = "Erkek")
                 }
-
                 Spacer(modifier = Modifier.height(8.dp))
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    InfoItem(
-                        label = "Kilo",
-                        value = "5.2 kg"
-                    )
-
-                    InfoItem(
-                        label = "Boy",
-                        value = "58 cm"
-                    )
-
-                    InfoItem(
-                        label = "Kan Grubu",
-                        value = "A+"
-                    )
+                    InfoItem(label = "Kilo", value = "5.2 kg")
+                    InfoItem(label = "Boy", value = "58 cm")
+                    InfoItem(label = "Kan Grubu", value = "A+")
                 }
             }
         }
@@ -287,7 +193,6 @@ fun InfoItem(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium
@@ -299,10 +204,10 @@ fun InfoItem(
 fun SettingsSection(
     authViewModel: AuthViewModel,
     onNavigateBack: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onNavigateToChatbot: () -> Unit  // BURAYA EKLENDİ
 ) {
-    val coroutineScope = rememberCoroutineScope()
-
+    var showHelpDialog by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -312,72 +217,109 @@ fun SettingsSection(
             text = "Ayarlar",
             style = MaterialTheme.typography.titleLarge
         )
-
         Spacer(modifier = Modifier.height(16.dp))
-
         SettingsItem(
             icon = painterResource(id = R.drawable.bell_notification_social_media_24),
             title = "Bildirimler",
             subtitle = "Uyarılar ve hatırlatıcıları ayarla",
-            onClick = { /* TODO: Bildirim ayarlarına git */ }
+            onClick = { /* Bildirim ayarlarına git */ }
         )
-
         SettingsItem(
             icon = painterResource(id = R.drawable.lock_24),
             title = "Gizlilik & Güvenlik",
             subtitle = "Veri paylaşımı ve izinleri yönet",
-            onClick = { /* TODO: Gizlilik ayarlarına git */ }
+            onClick = { /* Gizlilik ayarlarına git */ }
         )
-
         SettingsItem(
             icon = painterResource(id = R.drawable.broken_chain_link_wrong_24),
             title = "Bağlı Cihazlar",
             subtitle = "Bebek monitörleri ve sensörleri yönet",
-            onClick = { /* TODO: Cihaz ayarlarına git */ }
+            onClick = { /* Cihaz ayarlarına git */ }
         )
-
         SettingsItem(
             icon = painterResource(id = R.drawable.info_24),
             title = "Yardım & Destek",
             subtitle = "SSS ve iletişim bilgileri",
-            onClick = { /* TODO: Yardım ve destek sayfasına git */ }
+            onClick = { showHelpDialog = true }
         )
+    }
+    if (showHelpDialog) {
+        HelpMenu(
+            onDismiss = { showHelpDialog = false },
+            onNavigateToChatbot = onNavigateToChatbot // BURAYA EKLENDİ
+        )
+    }
+}
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        val isLoadingLogout = authViewModel.isLoadingLogout
-
-        Button(
-            onClick = {
-                coroutineScope.launch {
-                    authViewModel.logout()
-                    onLogout()
+@Composable
+fun HelpMenu(
+    onDismiss: () -> Unit,
+    onNavigateToChatbot: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {},
+        title = { Text("Yardım & Destek") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    Button(
+                        onClick = { /* E-posta Desteği */ },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(64.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE91E63)
+                        )
+                    ) {
+                        Text("E-posta Desteği")
+                    }
+                    Button(
+                        onClick = {
+                            onNavigateToChatbot()
+                            onDismiss()
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(64.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE91E63)
+                        )
+                    ) {
+                        Text("Canlı Destek")
+                    }
                 }
-            },
-            enabled = !isLoadingLogout,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error,
-                contentColor = MaterialTheme.colorScheme.onError
-            )
-        ) {
-            if (isLoadingLogout) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = MaterialTheme.colorScheme.onError,
-                    strokeWidth = 2.dp
-                )
-            } else {
-                Icon(
-                    painter = painterResource(id = R.drawable.exit_24),
-                    contentDescription = "Çıkış ikonu"
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Çıkış Yap")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = { /* Dökümanlar */ },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(64.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE91E63)
+                        )
+                    ) {
+                        Text("Dökümanlar")
+                    }
+                    Button(
+                        onClick = { /* Sistem Durumu */ },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(64.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE91E63)
+                        )
+                    ) {
+                        Text("Sistem Durumu")
+                    }
+                }
             }
         }
-
-
-        Spacer(modifier = Modifier.height(24.dp))
-    }
+    )
 }

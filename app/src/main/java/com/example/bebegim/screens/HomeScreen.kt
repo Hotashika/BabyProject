@@ -39,6 +39,7 @@ import kotlinx.coroutines.delay
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import com.example.bebegim.ui.components.HelpButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -138,6 +139,7 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            
             // Live Video
             Text(
                 text = "Video",
@@ -205,4 +207,3 @@ fun VitalCard(vital: VitalData, modifier: Modifier = Modifier) {
         }
     }
 }
-
