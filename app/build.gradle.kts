@@ -69,4 +69,7 @@ dependencies {
 
     // Ktor
     implementation(libs.ktor.client.okhttp)
+
+    //
+    implementation(libs.androidx.material.icons.extended)
 }
