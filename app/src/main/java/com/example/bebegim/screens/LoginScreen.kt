@@ -162,7 +162,7 @@ fun LoginScreen(
 
         TextButton(
             onClick = {
-                // TODO: Navigate to ForgotPasswordScreen
+
             },
             modifier = Modifier.fillMaxWidth()
         ) {

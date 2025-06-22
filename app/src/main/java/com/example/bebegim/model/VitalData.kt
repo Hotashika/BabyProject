@@ -10,5 +10,7 @@ data class VitalData(
 enum class VitalType(val displayName: String) {
     BABY_TEMPERATURE("Bebek Sıcaklığı"),
     ROOM_TEMPERATURE("Oda Sıcaklığı"),
-    HUMIDITY("Nem")
+    HUMIDITY("Nem"),
+    SLEEP("Uyku"),
+    CO2("CO2 Seviyesi")
 }
