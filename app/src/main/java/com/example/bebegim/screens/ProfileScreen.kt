@@ -1,123 +1,75 @@
 package com.example.bebegim.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Bloodtype
-import androidx.compose.material.icons.filled.Cake
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Height
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MonitorWeight
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
-import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.components.SettingsItem
-import androidx.compose.material.icons.filled.Check
+import java.time.LocalDate
+import java.time.Period
+import java.time.format.DateTimeFormatter
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     onNavigateBack: () -> Unit,
+    onLogout: () -> Unit,
     onNavigateToReports: () -> Unit,
-    onNavigateToChatbot: () -> Unit,
     onNavigateToCalendarAndNotes: () -> Unit,
-    onLogout: () -> Unit
+    onNavigateToChatbot: () -> Unit,
+    authViewModel: AuthViewModel
 ) {
-    val authViewModel: AuthViewModel = viewModel()
-
     Scaffold(
-        bottomBar = {
-            BottomNavBar(
-                currentRoute = "profile",
-                onHomeClick = onNavigateBack,
-                onChatClick = onNavigateToChatbot,
-                onReportsClick = onNavigateToReports,
-                onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
-                onProfileClick = { }
+        topBar = {
+            TopAppBar(
+                title = { Text("Profil") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Geri"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onLogout) {
+                        Icon(
+                            imageVector = Icons.Default.Logout,
+                            contentDescription = "Çıkış Yap"
+                        )
+                    }
+                }
             )
         }
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
         ) {
             ProfileHeader()
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             BabyInformation()
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             SettingsSection(
                 authViewModel = authViewModel,
                 onNavigateBack = onNavigateBack,
@@ -130,6 +82,19 @@ fun ProfileScreen(
 
 @Composable
 fun ProfileHeader() {
+    var showPhotoDialog by remember { mutableStateOf(false) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) selectedImageUri = uri
+    }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { /* Kamera ile çekilen fotoğrafı göstermek için ek işlem gerekir */ }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,15 +106,24 @@ fun ProfileHeader() {
                 .size(120.dp)
                 .clip(RectangleShape)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.profile_placeholder),
-                contentDescription = "Profil Resmi",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
+            if (selectedImageUri != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(selectedImageUri),
+                    contentDescription = "Profil Resmi",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.profile_placeholder),
+                    contentDescription = "Profil Resmi",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
 
             FloatingActionButton(
-                onClick = { /* TODO: Profil resmini düzenle */ },
+                onClick = { showPhotoDialog = true },
                 modifier = Modifier
                     .size(36.dp)
                     .align(Alignment.BottomEnd),
@@ -190,17 +164,58 @@ fun ProfileHeader() {
             )
         }
     }
+
+    if (showPhotoDialog) {
+        AlertDialog(
+            onDismissRequest = { showPhotoDialog = false },
+            title = { Text("Profil Fotoğrafı Seç") },
+            text = {
+                Column {
+                    Button(
+                        onClick = {
+                            showPhotoDialog = false
+                            galleryLauncher.launch("image/*")
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("Galeriden Fotoğraf Seç") }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = {
+                            showPhotoDialog = false
+                            cameraLauncher.launch(null)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("Kamerayı Aç") }
+                }
+            },
+            confirmButton = {}
+        )
+    }
 }
+
+fun calculateBabyAge(birthDateString: String): String {
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val birthDate = LocalDate.parse(birthDateString, formatter)
+    val today = LocalDate.now()
+    val period = Period.between(birthDate, today)
+    return "${period.years} yıl, ${period.months} ay, ${period.days} gün"
+}
+
 @Composable
 fun BabyInformation() {
     var isEditing by remember { mutableStateOf(false) }
     var babyName by remember { mutableStateOf("Mehmet Yılmaz") }
-    var babyAge by remember { mutableStateOf("3 ay") }
-    var babyBirthDate by remember { mutableStateOf("10 Şubat 2023") }
+    var babyBirthDate by remember { mutableStateOf("2022-08-15") }
     var babyGender by remember { mutableStateOf("Erkek") }
     var babyWeight by remember { mutableStateOf("5.2 kg") }
     var babyHeight by remember { mutableStateOf("58 cm") }
     var babyBloodType by remember { mutableStateOf("A+") }
+
+    val yas = try {
+        calculateBabyAge(babyBirthDate)
+    } catch (e: Exception) {
+        "-"
+    }
 
     Column(
         modifier = Modifier
@@ -218,7 +233,6 @@ fun BabyInformation() {
             )
             if (isEditing) {
                 IconButton(onClick = { isEditing = false }) {
-
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Kaydet"
@@ -271,16 +285,9 @@ fun BabyInformation() {
                 ) {
                     if (isEditing) {
                         OutlinedTextField(
-                            value = babyAge,
-                            onValueChange = { babyAge = it },
-                            label = { Text("Yaş") },
-                            modifier = Modifier.weight(1f)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        OutlinedTextField(
                             value = babyBirthDate,
                             onValueChange = { babyBirthDate = it },
-                            label = { Text("Doğum Tarihi") },
+                            label = { Text("Doğum Tarihi (yyyy-MM-dd)") },
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -302,7 +309,7 @@ fun BabyInformation() {
                             }
                         }
                     } else {
-                        InfoItem(label = "Yaş", value = babyAge)
+                        InfoItem(label = "Yaş", value = yas)
                         InfoItem(label = "Doğum Tarihi", value = babyBirthDate)
                         InfoItem(label = "Cinsiyet", value = babyGender)
                     }
@@ -343,6 +350,7 @@ fun BabyInformation() {
         }
     }
 }
+
 @Composable
 fun InfoItem(
     label: String,
@@ -360,8 +368,8 @@ fun InfoItem(
         )
     }
 }
-@Composable
 
+@Composable
 fun SettingsSection(
     authViewModel: AuthViewModel,
     onNavigateBack: () -> Unit,
@@ -370,6 +378,11 @@ fun SettingsSection(
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
     var showDevices by remember { mutableStateOf(false) }
+    var showPermissions by remember { mutableStateOf(false) }
+
+    var notificationPermission by remember { mutableStateOf(false) }
+    var audioPermission by remember { mutableStateOf(false) }
+    var cameraPermission by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -391,14 +404,72 @@ fun SettingsSection(
             icon = painterResource(id = R.drawable.lock_24),
             title = "Gizlilik & Güvenlik",
             subtitle = "Veri paylaşımı ve izinleri yönet",
-            onClick = { }
+            onClick = { showPermissions = !showPermissions }
         )
+        if (showPermissions) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 32.dp, top = 8.dp, bottom = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Bildirim İzni", modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = notificationPermission,
+                        onCheckedChange = { notificationPermission = it }
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Ses İzni", modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = audioPermission,
+                        onCheckedChange = { audioPermission = it }
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Kamera İzni", modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = cameraPermission,
+                        onCheckedChange = { cameraPermission = it }
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        showPermissions = false
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE91E63)
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Kaydet"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Kaydet")
+                }
+            }
+        }
         SettingsItem(
             icon = painterResource(id = R.drawable.baby_18),
             title = "Bağlı Cihazlar",
             subtitle = "Cihazları görüntüle ve ekle",
             onClick = { showDevices = !showDevices }
         )
+
         if (showDevices) {
             Column(
                 modifier = Modifier
@@ -422,7 +493,10 @@ fun SettingsSection(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer
                     )
                 ) {
-                    Text("Yeni Cihaz Ekle +", color = MaterialTheme.colorScheme.onSecondaryContainer)
+                    Text(
+                        "Yeni Cihaz Ekle +",
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
                 }
             }
         }
@@ -441,6 +515,51 @@ fun SettingsSection(
         )
     }
 }
+
+@Composable
+fun PermissionDialog(onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    var permissionGranted by remember { mutableStateOf(false) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        permissionGranted = isGranted
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Kapat")
+            }
+        },
+        title = { Text("İzinleri Yönet") },
+        text = {
+            Column {
+                Button(
+                    onClick = {
+                        launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(if (permissionGranted) "Bildirim İzni Verildi" else "Bildirim İzni Al")
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { /* Ses izni iste */ },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Ses İzni Al") }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { /* Kamera izni iste */ },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Kamera İzni Al") }
+            }
+        }
+    )
+}
+
 @Composable
 fun HelpMenu(
     onDismiss: () -> Unit,
@@ -530,5 +649,22 @@ fun HelpMenu(
                 )
             }
         )
+    }
+}
+
+@Composable
+fun NotificationPermissionRequest() {
+    var permissionGranted by remember { mutableStateOf(false) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        permissionGranted = isGranted
+    }
+
+    Button(onClick = {
+        launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+    }) {
+        Text(if (permissionGranted) "İzin Verildi" else "Bildirim İzni Al")
     }
 }

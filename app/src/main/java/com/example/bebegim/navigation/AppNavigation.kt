@@ -2,10 +2,12 @@ package com.example.bebegim.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.bebegim.auth.AuthViewModel
 import com.example.bebegim.screens.AdminScreen
 import com.example.bebegim.screens.AuthScreen
 import com.example.bebegim.screens.CalendarAndNoteScreen
@@ -149,6 +151,7 @@ fun AppNavigation() {
         }
 
         composable(Screen.Profile.route) {
+            val authViewModel: AuthViewModel = viewModel()
             ProfileScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onLogout = {
@@ -170,7 +173,8 @@ fun AppNavigation() {
                     navController.navigate(Screen.Chatbot.route) {
                         launchSingleTop = true
                     }
-                }
+                },
+                authViewModel = authViewModel
             )
         }
 
