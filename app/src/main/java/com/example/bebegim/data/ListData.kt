@@ -4,7 +4,7 @@ import androidx.compose.runtime.mutableStateListOf
 
 class ListData {
     private val maxSize = 7
-    val temperatureList = mutableStateListOf<Float>()
+    private val temperatureList = mutableStateListOf<Float>()
 
     fun addTemperature(temp: Double) {
         if (temperatureList.size == maxSize) {
