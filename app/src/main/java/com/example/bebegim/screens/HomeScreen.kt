@@ -95,9 +95,9 @@ fun HomeScreen(
                 true
             ),
             VitalData(VitalType.SLEEP, "12 saat", "Yeterli", true),
-            VitalData(VitalType.HUMIDITY, "45%", "Normal", true),
+            VitalData(VitalType.HUMIDITY, "45%", "Yüksek", true),
             VitalData(VitalType.ROOM_TEMPERATURE, "22.0°C", "Optimal", true),
-            VitalData(VitalType.CO2, "400 ppm", "İyi", true)
+            VitalData(VitalType.CO2, "29 AQI", "İyi", true)
         )
     }
 
