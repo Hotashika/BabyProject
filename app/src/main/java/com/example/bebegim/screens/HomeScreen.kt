@@ -53,10 +53,6 @@ import com.example.bebegim.data.GetThermalData
 import com.example.bebegim.model.VitalData
 import com.example.bebegim.model.VitalType
 import kotlinx.coroutines.delay
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import com.example.bebegim.ui.components.HelpButton
 import com.example.bebegim.R
 import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.theme.DarkPastelBlue
@@ -192,19 +188,6 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
 
-            // Live Video
-            Text(
-                text = "Video",
-                style = MaterialTheme.typography.titleLarge)
-            // Separator line above video
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(0.2.dp)
-                    .background(colorScheme.outline.copy(alpha = 0.3f))
-            )
-
-            // Video box with black background
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -302,8 +285,6 @@ fun HomeScreen(
                         fontWeight = FontWeight.Bold,
                         color = colorScheme.onSurface
                     )
-Auth Model and optimize imports #6
-.
                 }
             },
             text = {
@@ -420,3 +401,14 @@ fun VitalCard(vital: VitalData, modifier: Modifier = Modifier) {
     }
 }
 
+@Preview
+@Composable
+fun HomeScreenPreview() {
+    HomeScreen(
+        onNavigateToChatbot = {},
+        onNavigateToReports = {},
+        onNavigateToProfile = {},
+        onNavigateToCalendarAndNotes = {},
+        onNavigateToAdmin = {}
+    )
+}
