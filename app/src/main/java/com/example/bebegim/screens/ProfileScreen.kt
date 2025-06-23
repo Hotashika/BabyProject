@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -19,11 +20,16 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
+import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.components.SettingsItem
+import com.example.bebegim.ui.theme.DarkPastelBlue
+import com.example.bebegim.ui.theme.PastelBlueWhite
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
@@ -38,26 +44,18 @@ fun ProfileScreen(
     onNavigateToChatbot: () -> Unit,
     authViewModel: AuthViewModel
 ) {
+
+    val isDark = isSystemInDarkTheme()
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Profil") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Geri"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onLogout) {
-                        Icon(
-                            imageVector = Icons.Default.Logout,
-                            contentDescription = "Çıkış Yap"
-                        )
-                    }
-                }
+        containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
+        bottomBar = {
+            BottomNavBar(
+                currentRoute = "profile",
+                onHomeClick = onNavigateBack,
+                onChatClick = onNavigateToChatbot,
+                onReportsClick = onNavigateToReports,
+                onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
+                onProfileClick = { }
             )
         }
     ) { paddingValues ->
@@ -376,6 +374,8 @@ fun SettingsSection(
     onLogout: () -> Unit,
     onNavigateToChatbot: () -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
     var showHelpDialog by remember { mutableStateOf(false) }
     var showDevices by remember { mutableStateOf(false) }
     var showPermissions by remember { mutableStateOf(false) }
@@ -508,6 +508,40 @@ fun SettingsSection(
         )
     }
 
+    Spacer(modifier = Modifier.height(24.dp))
+
+    val isLoadingLogout = authViewModel.isLoadingLogout
+
+    Button(
+        onClick = {
+            coroutineScope.launch {
+                authViewModel.logout()
+                onLogout()
+            }
+        },
+        enabled = !isLoadingLogout,
+        modifier = Modifier.fillMaxWidth(),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.error,
+            contentColor = MaterialTheme.colorScheme.onError
+        )
+    ) {
+        if (isLoadingLogout) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = MaterialTheme.colorScheme.onError,
+                strokeWidth = 2.dp
+            )
+        } else {
+            Icon(
+                painter = painterResource(id = R.drawable.exit_24),
+                contentDescription = "Çıkış ikonu"
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Çıkış Yap")
+        }
+    }
+
     if (showHelpDialog) {
         HelpMenu(
             onDismiss = { showHelpDialog = false },
@@ -633,6 +667,7 @@ fun HelpMenu(
             }
         }
     )
+
 
     if (showEmailInfo) {
         AlertDialog(

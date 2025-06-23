@@ -79,5 +79,8 @@ dependencies {
     // Jaikeerthick's Composable Graphs
     implementation("com.github.jaikeerthick:Composable-Graphs:v1.2.3")
 
+    // CMPCharts
+    implementation("network.chaintech:cmpcharts:2.0.4")
+
 
 }
