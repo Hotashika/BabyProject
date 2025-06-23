@@ -1,6 +1,14 @@
 package com.example.bebegim.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -57,8 +65,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -76,9 +82,9 @@ import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
 import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.components.SettingsItem
-import kotlinx.coroutines.launch
+import androidx.compose.material.icons.filled.Check
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun ProfileScreen(
     onNavigateBack: () -> Unit,
@@ -88,10 +94,8 @@ fun ProfileScreen(
     onLogout: () -> Unit
 ) {
     val authViewModel: AuthViewModel = viewModel()
-    val errorMessage = authViewModel.errorMessage
 
     Scaffold(
-
         bottomBar = {
             BottomNavBar(
                 currentRoute = "profile",
@@ -111,17 +115,14 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ProfileHeader()
-
             Divider(modifier = Modifier.padding(vertical = 16.dp))
-
             BabyInformation()
-
             Divider(modifier = Modifier.padding(vertical = 16.dp))
-
             SettingsSection(
                 authViewModel = authViewModel,
                 onNavigateBack = onNavigateBack,
-                onLogout = onLogout
+                onLogout = onLogout,
+                onNavigateToChatbot = onNavigateToChatbot
             )
         }
     }
@@ -190,21 +191,42 @@ fun ProfileHeader() {
         }
     }
 }
-
 @Composable
 fun BabyInformation() {
+    var isEditing by remember { mutableStateOf(false) }
+    var babyName by remember { mutableStateOf("Mehmet Yılmaz") }
+    var babyAge by remember { mutableStateOf("3 ay") }
+    var babyBirthDate by remember { mutableStateOf("10 Şubat 2023") }
+    var babyGender by remember { mutableStateOf("Erkek") }
+    var babyWeight by remember { mutableStateOf("5.2 kg") }
+    var babyHeight by remember { mutableStateOf("58 cm") }
+    var babyBloodType by remember { mutableStateOf("A+") }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     ) {
-        Text(
-            text = "Bebek Bilgileri",
-            style = MaterialTheme.typography.titleLarge
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Bebek Bilgileri",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f)
+            )
+            if (isEditing) {
+                IconButton(onClick = { isEditing = false }) {
 
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Kaydet"
+                    )
+                }
+            }
+        }
         Spacer(modifier = Modifier.height(16.dp))
-
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -220,72 +242,107 @@ fun BabyInformation() {
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
-
                     Spacer(modifier = Modifier.width(8.dp))
-
-                    Text(
-                        text = "Mehmet Yılmaz",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    IconButton(onClick = { /* TODO: Bebek bilgilerini düzenle */ }) {
+                    if (isEditing) {
+                        OutlinedTextField(
+                            value = babyName,
+                            onValueChange = { babyName = it },
+                            label = { Text("Bebek Adı") },
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        Text(
+                            text = babyName,
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    IconButton(onClick = { isEditing = !isEditing }) {
                         Icon(
                             painter = painterResource(id = R.drawable.edit_24),
                             contentDescription = "Bebek Bilgilerini Düzenle"
                         )
                     }
                 }
-
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    InfoItem(
-                        label = "Yaş",
-                        value = "3 ay"
-                    )
-
-                    InfoItem(
-                        label = "Doğum Tarihi",
-                        value = "10 Şubat 2023"
-                    )
-
-                    InfoItem(
-                        label = "Cinsiyet",
-                        value = "Erkek"
-                    )
+                    if (isEditing) {
+                        OutlinedTextField(
+                            value = babyAge,
+                            onValueChange = { babyAge = it },
+                            label = { Text("Yaş") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        OutlinedTextField(
+                            value = babyBirthDate,
+                            onValueChange = { babyBirthDate = it },
+                            label = { Text("Doğum Tarihi") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Cinsiyet")
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(
+                                    selected = babyGender == "Erkek",
+                                    onClick = { babyGender = "Erkek" }
+                                )
+                                Text("Erkek")
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(
+                                    selected = babyGender == "Kız",
+                                    onClick = { babyGender = "Kız" }
+                                )
+                                Text("Kız")
+                            }
+                        }
+                    } else {
+                        InfoItem(label = "Yaş", value = babyAge)
+                        InfoItem(label = "Doğum Tarihi", value = babyBirthDate)
+                        InfoItem(label = "Cinsiyet", value = babyGender)
+                    }
                 }
-
                 Spacer(modifier = Modifier.height(8.dp))
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    InfoItem(
-                        label = "Kilo",
-                        value = "5.2 kg"
-                    )
-
-                    InfoItem(
-                        label = "Boy",
-                        value = "58 cm"
-                    )
-
-                    InfoItem(
-                        label = "Kan Grubu",
-                        value = "A+"
-                    )
+                    if (isEditing) {
+                        OutlinedTextField(
+                            value = babyWeight,
+                            onValueChange = { babyWeight = it },
+                            label = { Text("Kilo") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        OutlinedTextField(
+                            value = babyHeight,
+                            onValueChange = { babyHeight = it },
+                            label = { Text("Boy") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        OutlinedTextField(
+                            value = babyBloodType,
+                            onValueChange = { babyBloodType = it },
+                            label = { Text("Kan Grubu") },
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        InfoItem(label = "Kilo", value = babyWeight)
+                        InfoItem(label = "Boy", value = babyHeight)
+                        InfoItem(label = "Kan Grubu", value = babyBloodType)
+                    }
                 }
             }
         }
     }
 }
-
 @Composable
 fun InfoItem(
     label: String,
@@ -297,21 +354,22 @@ fun InfoItem(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium
         )
     }
 }
-
 @Composable
+
 fun SettingsSection(
     authViewModel: AuthViewModel,
     onNavigateBack: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onNavigateToChatbot: () -> Unit
 ) {
-    val coroutineScope = rememberCoroutineScope()
+    var showHelpDialog by remember { mutableStateOf(false) }
+    var showDevices by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -322,65 +380,155 @@ fun SettingsSection(
             text = "Ayarlar",
             style = MaterialTheme.typography.titleLarge
         )
-
         Spacer(modifier = Modifier.height(16.dp))
-
+        SettingsItem(
+            icon = painterResource(id = R.drawable.bell_notification_social_media_24),
+            title = "Bildirimler",
+            subtitle = "Uyarılar ve hatırlatıcıları ayarla",
+            onClick = { }
+        )
         SettingsItem(
             icon = painterResource(id = R.drawable.lock_24),
             title = "Gizlilik & Güvenlik",
             subtitle = "Veri paylaşımı ve izinleri yönet",
-            onClick = { /* TODO: Gizlilik ayarlarına git */ }
+            onClick = { }
         )
-
         SettingsItem(
-            icon = painterResource(id = R.drawable.broken_chain_link_wrong_24),
+            icon = painterResource(id = R.drawable.baby_18),
             title = "Bağlı Cihazlar",
-            subtitle = "Bebek monitörleri ve sensörleri yönet",
-            onClick = { /* TODO: Cihaz ayarlarına git */ }
+            subtitle = "Cihazları görüntüle ve ekle",
+            onClick = { showDevices = !showDevices }
         )
-
+        if (showDevices) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 32.dp, top = 8.dp, bottom = 8.dp)
+            ) {
+                Button(
+                    onClick = { /* Cihaz 1 detaylarına gitme işlemi */ },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Text("Cihaz 1", color = MaterialTheme.colorScheme.onSecondaryContainer)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { /* Yeni cihaz ekleme işlemi */ },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Text("Yeni Cihaz Ekle +", color = MaterialTheme.colorScheme.onSecondaryContainer)
+                }
+            }
+        }
         SettingsItem(
             icon = painterResource(id = R.drawable.info_24),
             title = "Yardım & Destek",
             subtitle = "SSS ve iletişim bilgileri",
-            onClick = { /* TODO: Yardım ve destek sayfasına git */ }
+            onClick = { showHelpDialog = true }
         )
+    }
 
-        Spacer(modifier = Modifier.height(24.dp))
+    if (showHelpDialog) {
+        HelpMenu(
+            onDismiss = { showHelpDialog = false },
+            onNavigateToChatbot = onNavigateToChatbot
+        )
+    }
+}
+@Composable
+fun HelpMenu(
+    onDismiss: () -> Unit,
+    onNavigateToChatbot: () -> Unit
+) {
+    var showEmailInfo by remember { mutableStateOf(false) }
 
-        val isLoadingLogout = authViewModel.isLoadingLogout
-
-        Button(
-            onClick = {
-                coroutineScope.launch {
-                    authViewModel.logout()
-                    onLogout()
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {},
+        title = { Text("Yardım & Destek") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    Button(
+                        onClick = { showEmailInfo = true },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(64.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE91E63)
+                        )
+                    ) {
+                        Text("E-posta Desteği")
+                    }
+                    Button(
+                        onClick = {
+                            onNavigateToChatbot()
+                            onDismiss()
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(64.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE91E63)
+                        )
+                    ) {
+                        Text("Canlı Destek")
+                    }
                 }
-            },
-            enabled = !isLoadingLogout,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error,
-                contentColor = MaterialTheme.colorScheme.onError
-            )
-        ) {
-            if (isLoadingLogout) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = MaterialTheme.colorScheme.onError,
-                    strokeWidth = 2.dp
-                )
-            } else {
-                Icon(
-                    painter = painterResource(id = R.drawable.exit_24),
-                    contentDescription = "Çıkış ikonu"
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Çıkış Yap")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = { /* Dökümanlar */ },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(64.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE91E63)
+                        )
+                    ) {
+                        Text("Dökümanlar")
+                    }
+                    Button(
+                        onClick = { /* Sistem Durumu */ },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(64.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE91E63)
+                        )
+                    ) {
+                        Text("Sistem Durumu")
+                    }
+                }
             }
         }
+    )
 
-
-        Spacer(modifier = Modifier.height(24.dp))
+    if (showEmailInfo) {
+        AlertDialog(
+            onDismissRequest = { showEmailInfo = false },
+            confirmButton = {
+                TextButton(onClick = { showEmailInfo = false }) {
+                    Text("Tamam")
+                }
+            },
+            title = { Text("E-posta Desteği") },
+            text = {
+                Text(
+                    "Teknik sorunlarınız için e-posta gönderin. 24 saat içinde yanıtlanır.\n\neternaltakimi@gmail.com"
+                )
+            }
+        )
     }
 }

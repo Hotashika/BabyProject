@@ -30,7 +30,7 @@ class GetThermalData {
             Log.d(TAG, "Raw JSON: $body")
             val json = JSONObject(body)
 
-            val centerTemp = json.getDouble("center_temperature")
+            val centerTemp = json.getDouble("max_temperature")
             Log.d(TAG, "Center Temperature: $centerTemp")
 
             return@withContext centerTemp
