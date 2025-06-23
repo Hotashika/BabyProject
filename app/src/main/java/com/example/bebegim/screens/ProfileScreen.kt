@@ -84,6 +84,7 @@ fun ProfileScreen(
     onNavigateBack: () -> Unit,
     onNavigateToReports: () -> Unit,
     onNavigateToChatbot: () -> Unit,
+    onNavigateToCalendarAndNotes: () -> Unit,
     onLogout: () -> Unit
 ) {
     val authViewModel: AuthViewModel = viewModel()
@@ -97,6 +98,7 @@ fun ProfileScreen(
                 onHomeClick = onNavigateBack,
                 onChatClick = onNavigateToChatbot,
                 onReportsClick = onNavigateToReports,
+                onCalendarAndNotesClick = { onNavigateToCalendarAndNotes },
                 onProfileClick = { }
             )
         }
