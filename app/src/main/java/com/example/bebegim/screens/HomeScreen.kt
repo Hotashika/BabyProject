@@ -60,6 +60,7 @@ fun HomeScreen(
     onNavigateToChatbot: () -> Unit,
     onNavigateToReports: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    onNavigateToCalendarAndNotes: () -> Unit,
     onNavigateToAdmin: () -> Unit
 ) {
     val isAdmin = remember { mutableStateOf(true) }
@@ -125,7 +126,8 @@ fun HomeScreen(
                 onHomeClick = { },
                 onChatClick = onNavigateToChatbot,
                 onReportsClick = onNavigateToReports,
-                onProfileClick = onNavigateToProfile
+                onProfileClick = onNavigateToProfile,
+                onCalendarAndNotesClick = { onNavigateToCalendarAndNotes },
             )
         }
     ) { paddingValues ->
