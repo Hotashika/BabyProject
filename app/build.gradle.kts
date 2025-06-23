@@ -73,14 +73,11 @@ dependencies {
     //
     implementation(libs.androidx.material.icons.extended)
 
-/*    // Charts
-    implementation(libs.vico.compose)
-    implementation(libs.vico.compose.m2)
-    implementation(libs.vico.compose.m3)
-    implementation(libs.vico.multiplatform)
-    implementation(libs.vico.views)*/
-
     // ComposeCharts
-    implementation ("io.github.ehsannarmani:compose-charts:0.1.7")
+    /*implementation ("io.github.ehsannarmani:compose-charts:0.1.7")*/
+
+    // Jaikeerthick's Composable Graphs
+    implementation("com.github.jaikeerthick:Composable-Graphs:v1.2.3")
+
 
 }
