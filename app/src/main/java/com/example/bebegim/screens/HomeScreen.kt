@@ -54,6 +54,17 @@ import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
 import com.example.bebegim.ui.theme.Poppins
 
+fun getTemperatureStatus(temp: Double?): String {
+    return when {
+        temp == null -> "Yükleniyor..."
+        temp < 36.5 -> "Düşük"
+        temp in 36.5..37.5 -> "Normal"
+        temp > 37.5 -> "Yüksek"
+        else -> "Bilinmiyor"
+    }
+}
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -77,7 +88,12 @@ fun HomeScreen(
 
     val vitals = remember(meanTemp) {
         listOf(
-            VitalData(VitalType.BABY_TEMPERATURE, meanTemp?.let { "%.1f°C".format(it) } ?: "Yükleniyor...", "Normal", true),
+            VitalData(
+                VitalType.BABY_TEMPERATURE,
+                meanTemp?.let { "%.1f°C".format(it) } ?: "Yükleniyor...",
+                getTemperatureStatus(meanTemp),
+                true
+            ),
             VitalData(VitalType.SLEEP, "12 saat", "Yeterli", true),
             VitalData(VitalType.HUMIDITY, "45%", "Normal", true),
             VitalData(VitalType.ROOM_TEMPERATURE, "22.0°C", "Optimal", true),
