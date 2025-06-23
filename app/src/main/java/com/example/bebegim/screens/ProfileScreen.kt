@@ -98,7 +98,7 @@ fun ProfileScreen(
                 onHomeClick = onNavigateBack,
                 onChatClick = onNavigateToChatbot,
                 onReportsClick = onNavigateToReports,
-                onCalendarAndNotesClick = { onNavigateToCalendarAndNotes },
+                onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
                 onProfileClick = { }
             )
         }

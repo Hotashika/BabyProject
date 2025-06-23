@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.theme.DarkPastelBlue
@@ -30,7 +31,7 @@ fun CalendarAndNoteScreen(
                 currentRoute = "calendar_and_notes",
                 onChatClick = onNavigateToChatbot,
                 onReportsClick = onNavigateToReports,
-                onCalendarAndNotesClick = { /* No action needed */ },
+                onCalendarAndNotesClick = { },
                 onProfileClick = onNavigateToProfile,
                 onHomeClick = onNavigateBack,
             )
@@ -48,4 +49,15 @@ fun CalendarAndNoteScreen(
             )
         }
     }
+}
+
+@Preview
+@Composable
+fun CalendarAndNoteScreenPreview() {
+    CalendarAndNoteScreen(
+        onNavigateBack = {},
+        onNavigateToChatbot = {},
+        onNavigateToReports = {},
+        onNavigateToProfile = {}
+    )
 }

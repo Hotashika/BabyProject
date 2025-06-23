@@ -58,8 +58,8 @@ fun ReportsScreen(
                 onHomeClick = onNavigateBack,
                 onChatClick = onNavigateToChatbot,
                 onProfileClick = onNavigateToProfile,
-                onCalendarAndNotesClick = { onNavigateToCalendarAndNotes },
-                onReportsClick = {}
+                onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
+                onReportsClick = { }
             )
         }
     ) { paddingValues ->
@@ -102,7 +102,6 @@ fun DailyReportContent() {
 
     val listData = remember { ListData() }
 
-    // Temp Data
     LaunchedEffect(Unit) {
         val getThermalData = GetThermalData()
         while (true) {
