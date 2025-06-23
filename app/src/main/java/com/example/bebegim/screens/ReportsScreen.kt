@@ -44,29 +44,13 @@ import kotlinx.coroutines.delay
 fun ReportsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    onNavigateToCalendarAndNotes: () -> Unit,
     onNavigateToChatbot: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Günlük", "Haftalık", "Aylık")
 
     Scaffold(
-        // Unnecessary
-
-        /*topBar = {
-            TopAppBar(
-                title = { Text("Detaylar") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Geri")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        },*/
 
         bottomBar = {
             BottomNavBar(
@@ -74,6 +58,7 @@ fun ReportsScreen(
                 onHomeClick = onNavigateBack,
                 onChatClick = onNavigateToChatbot,
                 onProfileClick = onNavigateToProfile,
+                onCalendarAndNotesClick = { onNavigateToCalendarAndNotes },
                 onReportsClick = {}
             )
         }

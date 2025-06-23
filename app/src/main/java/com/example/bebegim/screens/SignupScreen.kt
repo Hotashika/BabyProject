@@ -46,8 +46,7 @@ import com.example.bebegim.ui.theme.PastelBlueWhite
 @Composable
 fun SignupScreen(
     onSignupSuccess: (Boolean) -> Unit,
-    onNavigateBack: () -> Unit,
-    onNavigateToSignup: () -> Unit
+    onNavigateBack: () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
 
