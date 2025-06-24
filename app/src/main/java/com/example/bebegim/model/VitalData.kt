@@ -12,5 +12,5 @@ enum class VitalType(val displayName: String) {
     ROOM_TEMPERATURE("Oda Sıcaklığı"),
     HUMIDITY("Nem"),
     SLEEP("Uyku"),
-    CO2("CO2 Seviyesi")
+    CO2("Hava Kalitesi"),
 }
