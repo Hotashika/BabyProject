@@ -225,3 +225,7 @@ fun AppNavigation() {
         }
     }
 }
+
+fun ProfileScreen(onNavigateBack: () -> Unit, onLogout: () -> Unit, onNavigateToReports: () -> Unit, onNavigateToCalendarAndNotes: () -> Unit, onNavigateToChatbot: () -> Unit, authViewModel: AuthViewModel) {
+
+}

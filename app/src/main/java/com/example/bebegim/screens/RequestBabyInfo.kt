@@ -1,43 +1,15 @@
 package com.example.bebegim.screens
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -48,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import com.example.bebegim.R
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
-import io.ktor.websocket.Frame.Text
 
 @Composable
 fun RequestBabyInfo(
@@ -124,6 +95,15 @@ fun RequestBabyInfo(
             keyboardType = KeyboardType.Decimal
         )
 
+        BabyHeightTextField(
+            value = babyHeight,
+            onValueChange = { babyHeight = it },
+            label = "Boy (cm)",
+            placeholder = "Bebeğinizin boyunu giriniz",
+            iconRes = R.drawable.user_24,
+            keyboardType = KeyboardType.Decimal
+        )
+
         Spacer(modifier = Modifier.padding(16.dp))
 
         Row(
@@ -151,12 +131,11 @@ fun RequestBabyInfo(
                 Text("Kaydet")
             }
         }
-
     }
 }
 
 @Composable
-private fun BabyFullNameTextField(
+private fun BabyBirthDateTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -164,11 +143,11 @@ private fun BabyFullNameTextField(
     iconRes: Int,
     keyboardType: KeyboardType
 ) {
-    Column (
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-    ){
+    ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
@@ -180,7 +159,6 @@ private fun BabyFullNameTextField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            /*label = { Text(label, color = MaterialTheme.colorScheme.onSurface) },*/
             placeholder = {
                 if (value.isEmpty()) {
                     Text(placeholder, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
@@ -213,7 +191,65 @@ private fun BabyFullNameTextField(
                 .animateContentSize()
         )
     }
+}
 
+@Composable
+private fun BabyFullNameTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    placeholder: String,
+    iconRes: Int,
+    keyboardType: KeyboardType
+) {
+    Column (
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ){
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .padding(bottom = 0.dp)
+                .padding(start = 16.dp),
+        )
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = {
+                if (value.isEmpty()) {
+                    Text(placeholder, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                }
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(iconRes),
+                    contentDescription = "$label icon",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = keyboardType,
+                imeAction = ImeAction.Next
+            ),
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurface
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize()
+        )
+    }
 }
 
 @Composable
@@ -224,10 +260,8 @@ private fun BabyGenderTextField(
     placeholder: String = "Cinsiyet seçiniz",
     iconRes: Int = R.drawable.profile_placeholder,
 ) {
-    val expanded = remember { mutableStateOf(false) }
-    val internalValue = remember { mutableStateOf(value) }
-    val genderOptions = listOf("Erkek", "Kız")
-    val currentValue = if (onValueChange != null) value else internalValue.value
+    val currentValue = value
+    val onChange = onValueChange ?: {}
 
     Column(
         modifier = Modifier
@@ -243,94 +277,34 @@ private fun BabyGenderTextField(
                 .padding(start = 16.dp),
         )
 
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded.value = true }
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            OutlinedTextField(
-                value = currentValue,
-                onValueChange = {},
-                readOnly = true,
-                placeholder = {
-                    Text(
-                        text = placeholder,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = iconRes),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
-                trailingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.dropdown_select_24),
-                        contentDescription = "Dropdown Icon",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(16.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                    focusedLabelColor = MaterialTheme.colorScheme.primary,
-                    cursorColor = MaterialTheme.colorScheme.primary,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurface
+            Button(
+                onClick = { onChange("Kız") },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (currentValue == "Kız") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = if (currentValue == "Kız") MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
                 ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .animateContentSize()
-            )
-        }
-
-        DropdownMenu(
-            expanded = expanded.value,
-            onDismissRequest = { expanded.value = false },
-            modifier = Modifier.background(
-                MaterialTheme.colorScheme.surface,
-                RoundedCornerShape(8.dp)
-            )
-        ) {
-            genderOptions.forEach { gender ->
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = gender,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    },
-                    onClick = {
-                        expanded.value = false
-                        if (onValueChange != null) {
-                            onValueChange(gender)
-                        } else {
-                            internalValue.value = gender
-                        }
-                    }
-                )
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Kız")
+            }
+            Button(
+                onClick = { onChange("Erkek") },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (currentValue == "Erkek") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = if (currentValue == "Erkek") MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
+                ),
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Erkek")
             }
         }
     }
-}
-
-
-@Composable
-private fun BabyBirthDateTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    placeholder: String,
-    iconRes: Int,
-    keyboardType: KeyboardType
-) {
-    // Implement as needed
 }
 
 @Composable
@@ -342,7 +316,54 @@ private fun BabyWeightTextField(
     iconRes: Int,
     keyboardType: KeyboardType
 ) {
-    // Implement as needed
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .padding(bottom = 0.dp)
+                .padding(start = 16.dp),
+        )
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = {
+                if (value.isEmpty()) {
+                    Text(placeholder, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                }
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(iconRes),
+                    contentDescription = "$label icon",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = keyboardType,
+                imeAction = ImeAction.Next
+            ),
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurface
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize()
+        )
+    }
 }
 
 @Composable
@@ -354,7 +375,54 @@ private fun BabyHeightTextField(
     iconRes: Int,
     keyboardType: KeyboardType
 ) {
-    // Implement as needed
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .padding(bottom = 0.dp)
+                .padding(start = 16.dp),
+        )
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = {
+                if (value.isEmpty()) {
+                    Text(placeholder, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                }
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(iconRes),
+                    contentDescription = "$label icon",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = keyboardType,
+                imeAction = ImeAction.Next
+            ),
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurface
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize()
+        )
+    }
 }
 
 @Composable
@@ -366,7 +434,54 @@ private fun BabyBloodTypeTextField(
     iconRes: Int,
     keyboardType: KeyboardType
 ) {
-    // Implement as needed
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .padding(bottom = 0.dp)
+                .padding(start = 16.dp),
+        )
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = {
+                if (value.isEmpty()) {
+                    Text(placeholder, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                }
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(iconRes),
+                    contentDescription = "$label icon",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = keyboardType,
+                imeAction = ImeAction.Next
+            ),
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurface
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize()
+        )
+    }
 }
 
 @Preview
