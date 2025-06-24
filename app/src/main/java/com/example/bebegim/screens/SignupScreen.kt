@@ -121,7 +121,6 @@ fun SignupScreen(
                     authViewModel.errorMessage = "Lütfen tüm alanları doldurun."
                     return@LoadingButton
                 }
-
                 authViewModel.signUpNewUser(
                     email = email,
                     password = password,
