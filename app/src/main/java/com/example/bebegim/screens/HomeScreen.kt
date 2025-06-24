@@ -1,5 +1,6 @@
 package com.example.bebegim.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +37,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,12 +46,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bebegim.data.GetThermalData
+import com.example.bebegim.data.GetVideo
 import com.example.bebegim.model.VitalData
 import com.example.bebegim.model.VitalType
 import kotlinx.coroutines.delay
@@ -81,6 +86,10 @@ fun HomeScreen(
     val isAdmin = remember { mutableStateOf(true) }
     var meanTemp by remember { mutableStateOf<Double?>(null) }
     val getThermalData = remember { GetThermalData() }
+
+    // Video için eklenen kısım
+    val getVideo = remember { GetVideo() }
+    val currentFrame by getVideo.getVideoStream().collectAsState(initial = null)
 
     // Bildirim pop-up için state
     var showNotificationDialog by remember { mutableStateOf(false) }
@@ -188,6 +197,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
 
+            // Video kısmı - SADECE BU KISIM DEĞİŞTİRİLDİ
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -196,13 +206,36 @@ fun HomeScreen(
                     .background(Color.Black),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Video",
-                    fontFamily = Poppins,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = Color.White
-                )
+                if (currentFrame != null) {
+                    // Video frame'i göster
+                    Image(
+                        bitmap = currentFrame!!.asImageBitmap(),
+                        contentDescription = "Canlı Video",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // Yüklenirken veya bağlantı yokken gösterilecek
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.bell_24), // Video ikonu kullanın
+                            contentDescription = "Video Yükleniyor",
+                            tint = Color.White,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Video Yükleniyor...",
+                            fontFamily = Poppins,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 16.sp,
+                            color = Color.White
+                        )
+                    }
+                }
             }
 
             // Extra space between video and vitals
