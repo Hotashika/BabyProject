@@ -4,7 +4,10 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -19,11 +22,16 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
+import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.components.SettingsItem
+import com.example.bebegim.ui.theme.DarkPastelBlue
+import com.example.bebegim.ui.theme.PastelBlueWhite
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
@@ -38,26 +46,20 @@ fun ProfileScreen(
     onNavigateToChatbot: () -> Unit,
     authViewModel: AuthViewModel
 ) {
+
+    val isDark = isSystemInDarkTheme()
+    val scrollState = rememberScrollState()
+
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Profil") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Geri"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onLogout) {
-                        Icon(
-                            imageVector = Icons.Default.Logout,
-                            contentDescription = "Çıkış Yap"
-                        )
-                    }
-                }
+        containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
+        bottomBar = {
+            BottomNavBar(
+                currentRoute = "profile",
+                onHomeClick = onNavigateBack,
+                onChatClick = onNavigateToChatbot,
+                onReportsClick = onNavigateToReports,
+                onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
+                onProfileClick = { }
             )
         }
     ) { paddingValues ->
@@ -65,6 +67,7 @@ fun ProfileScreen(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
+                .verticalScroll(scrollState)
         ) {
             ProfileHeader()
             Spacer(modifier = Modifier.height(16.dp))
@@ -76,6 +79,8 @@ fun ProfileScreen(
                 onLogout = onLogout,
                 onNavigateToChatbot = onNavigateToChatbot
             )
+            // Bottom padding to ensure content is not hidden behind bottom navigation
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -376,6 +381,8 @@ fun SettingsSection(
     onLogout: () -> Unit,
     onNavigateToChatbot: () -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
     var showHelpDialog by remember { mutableStateOf(false) }
     var showDevices by remember { mutableStateOf(false) }
     var showPermissions by remember { mutableStateOf(false) }
@@ -394,12 +401,7 @@ fun SettingsSection(
             style = MaterialTheme.typography.titleLarge
         )
         Spacer(modifier = Modifier.height(16.dp))
-        SettingsItem(
-            icon = painterResource(id = R.drawable.bell_notification_social_media_24),
-            title = "Bildirimler",
-            subtitle = "Uyarılar ve hatırlatıcıları ayarla",
-            onClick = { }
-        )
+
         SettingsItem(
             icon = painterResource(id = R.drawable.lock_24),
             title = "Gizlilik & Güvenlik",
@@ -506,6 +508,42 @@ fun SettingsSection(
             subtitle = "SSS ve iletişim bilgileri",
             onClick = { showHelpDialog = true }
         )
+    }
+
+    Spacer(modifier = Modifier.height(24.dp))
+
+    val isLoadingLogout = authViewModel.isLoadingLogout
+
+    Button(
+        onClick = {
+            coroutineScope.launch {
+                authViewModel.logout()
+                onLogout()
+            }
+        },
+        enabled = !isLoadingLogout,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.error,
+            contentColor = MaterialTheme.colorScheme.onError
+        )
+    ) {
+        if (isLoadingLogout) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = MaterialTheme.colorScheme.onError,
+                strokeWidth = 2.dp
+            )
+        } else {
+            Icon(
+                painter = painterResource(id = R.drawable.exit_24),
+                contentDescription = "Çıkış ikonu"
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Çıkış Yap")
+        }
     }
 
     if (showHelpDialog) {
@@ -633,6 +671,7 @@ fun HelpMenu(
             }
         }
     )
+
 
     if (showEmailInfo) {
         AlertDialog(

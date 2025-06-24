@@ -68,14 +68,14 @@ fun AuthScreen(
     ) {
         // Logo veya ikon alanı
         Icon(
-            painter = painterResource(id = R.drawable.child_head_24),
+            painter = painterResource(id = R.drawable.babyguard_profile_photo_v2),
             contentDescription = "BabyGuard Logo",
-            modifier = Modifier.size(80.dp),
+            modifier = Modifier.size(200.dp),
             tint = MaterialTheme.colorScheme.primary
         )
 
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
             text = "BabyGuard",
@@ -86,7 +86,7 @@ fun AuthScreen(
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(2.dp))
 
         /*Text(
             text = "Bebeğiniz için güvenli bir dünya",
