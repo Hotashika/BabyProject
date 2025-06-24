@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -56,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import com.example.bebegim.R
 import com.example.bebegim.model.ChatMessage
 import com.example.bebegim.model.MessageType
+import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
 import com.example.bebegim.ui.theme.Poppins
@@ -66,6 +68,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChatbotScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToChatbot: () -> Unit,
+    onNavigateToHome: () -> Unit,
+    onNavigateToReports: () -> Unit,
+    onNavigateToProfile: () -> Unit,
+    onNavigateToCalendarAndNotes: () -> Unit
 ) {
     val messages = remember { mutableStateListOf<ChatMessage>() }
     val inputText = remember { mutableStateOf("") }
@@ -98,7 +105,7 @@ fun ChatbotScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Geri"
                         )
                     }
@@ -109,7 +116,18 @@ fun ChatbotScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
+        },
+        bottomBar = {
+            BottomNavBar(
+                currentRoute = "chatbot",
+                onHomeClick = { onNavigateToHome },
+                onChatClick = onNavigateToChatbot,
+                onReportsClick = onNavigateToReports,
+                onProfileClick = onNavigateToProfile,
+                onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
+            )
         }
+
     ) { paddingValues ->
         Column(
             modifier = Modifier

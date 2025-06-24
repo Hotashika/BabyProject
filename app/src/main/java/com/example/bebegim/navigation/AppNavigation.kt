@@ -16,6 +16,7 @@ import com.example.bebegim.screens.HomeScreen
 import com.example.bebegim.screens.LoginScreen
 import com.example.bebegim.screens.ProfileScreen
 import com.example.bebegim.screens.ReportsScreen
+import com.example.bebegim.screens.RequestBabyInfo
 import com.example.bebegim.screens.SignupScreen
 
 sealed class Screen(val route: String) {
@@ -28,6 +29,7 @@ sealed class Screen(val route: String) {
     object Signup : Screen("signup")
     object Auth : Screen("auth")
     object CalendarAndNotes : Screen("calendar_and_notes")
+    object RequestBabyInfo : Screen("request_baby_info")
 }
 
 @Composable
@@ -68,11 +70,26 @@ fun AppNavigation() {
         composable(Screen.Signup.route) {
             SignupScreen(
                 onSignupSuccess = {
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.RequestBabyInfo.route) {
                         popUpTo(Screen.Auth.route) { inclusive = true }
                     }
                 },
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.RequestBabyInfo.route) {
+            RequestBabyInfo(
+                onBabyInfoSubmitted = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Auth.route) { inclusive = true }
+                    }
+                },
+                onBabyInfoCancelled = {
+                    navController.navigate(Screen.Signup.route) {
+                        popUpTo(Screen.Auth.route) { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -104,7 +121,32 @@ fun AppNavigation() {
 
         composable(Screen.Chatbot.route) {
             ChatbotScreen(
-                onNavigateBack = { navController.navigate(Screen.Home.route) }
+                onNavigateBack = { navController.navigate(Screen.Home.route) },
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToReports = {
+                    navController.navigate(Screen.Reports.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToCalendarAndNotes = {
+                    navController.navigate(Screen.CalendarAndNotes.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToChatbot = {
+                    navController.navigate(Screen.Chatbot.route) {
+                        launchSingleTop = true
+                    }
+                }
             )
         }
 
