@@ -6,6 +6,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -46,6 +48,8 @@ fun ProfileScreen(
 ) {
 
     val isDark = isSystemInDarkTheme()
+    val scrollState = rememberScrollState()
+
     Scaffold(
         containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
         bottomBar = {
@@ -63,6 +67,7 @@ fun ProfileScreen(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
+                .verticalScroll(scrollState)
         ) {
             ProfileHeader()
             Spacer(modifier = Modifier.height(16.dp))
@@ -74,6 +79,8 @@ fun ProfileScreen(
                 onLogout = onLogout,
                 onNavigateToChatbot = onNavigateToChatbot
             )
+            // Bottom padding to ensure content is not hidden behind bottom navigation
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -394,12 +401,7 @@ fun SettingsSection(
             style = MaterialTheme.typography.titleLarge
         )
         Spacer(modifier = Modifier.height(16.dp))
-        SettingsItem(
-            icon = painterResource(id = R.drawable.bell_notification_social_media_24),
-            title = "Bildirimler",
-            subtitle = "Uyarılar ve hatırlatıcıları ayarla",
-            onClick = { }
-        )
+
         SettingsItem(
             icon = painterResource(id = R.drawable.lock_24),
             title = "Gizlilik & Güvenlik",
@@ -520,7 +522,9 @@ fun SettingsSection(
             }
         },
         enabled = !isLoadingLogout,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.error,
             contentColor = MaterialTheme.colorScheme.onError

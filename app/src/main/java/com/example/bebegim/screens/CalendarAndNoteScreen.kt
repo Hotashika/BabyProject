@@ -12,6 +12,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,6 +42,19 @@ fun CalendarAndNoteScreen(
     val isDark = isSystemInDarkTheme()
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
+
+    // Notları saklamak için map kullanıyoruz (gerçek uygulamada database veya ViewModel kullanılmalı)
+    var notes by remember { mutableStateOf<Map<LocalDate, String>>(emptyMap()) }
+    var currentNote by remember { mutableStateOf("") }
+    var isEditing by remember { mutableStateOf(false) }
+
+    // Tarih seçildiğinde notu yükle
+    LaunchedEffect(selectedDate) {
+        selectedDate?.let { date ->
+            currentNote = notes[date] ?: ""
+            isEditing = false
+        }
+    }
 
     Scaffold(
         containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
@@ -121,12 +136,13 @@ fun CalendarAndNoteScreen(
                 currentMonth = currentMonth,
                 selectedDate = selectedDate,
                 onDateSelected = { selectedDate = it },
-                isDark = isDark
+                isDark = isDark,
+                noteDates = notes.keys.toSet()
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Selected date info
+            // Selected date info and note editor
             selectedDate?.let { date ->
                 Card(
                     modifier = Modifier
@@ -140,27 +156,122 @@ fun CalendarAndNoteScreen(
                     Column(
                         modifier = Modifier.padding(16.dp)
                     ) {
-                        Text(
-                            text = "Seçilen Tarih",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = if (isDark) Color.White else Color.Black
-                        )
-                        Text(
-                            text = date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("tr"))),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isDark) Color.White else Color.Black,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Seçilen Tarih",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = if (isDark) Color.White else Color.Black
+                                )
+                                Text(
+                                    text = date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("tr"))),
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isDark) Color.White else Color.Black,
+                                    modifier = Modifier.padding(top = 4.dp)
+                                )
+                            }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                            // Edit/Save button
+                            if (isEditing) {
+                                Row {
+                                    IconButton(
+                                        onClick = {
+                                            if (currentNote.isBlank()) {
+                                                notes = notes - date
+                                            } else {
+                                                notes = notes + (date to currentNote)
+                                            }
+                                            isEditing = false
+                                        }
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Save,
+                                            contentDescription = "Kaydet",
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
 
-                        Text(
-                            text = "Bu tarih için not ekleyebilir veya etkinlik planlayabilirsiniz.",
-                            fontSize = 14.sp,
-                            color = if (isDark) Color.White.copy(alpha = 0.8f) else Color.Black.copy(alpha = 0.8f)
-                        )
+                                    if (notes.containsKey(date)) {
+                                        IconButton(
+                                            onClick = {
+                                                notes = notes - date
+                                                currentNote = ""
+                                                isEditing = false
+                                            }
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Delete,
+                                                contentDescription = "Sil",
+                                                tint = MaterialTheme.colorScheme.error
+                                            )
+                                        }
+                                    }
+                                }
+                            } else {
+                                TextButton(
+                                    onClick = { isEditing = true }
+                                ) {
+                                    Text(
+                                        text = if (notes.containsKey(date)) "Düzenle" else "Not Ekle",
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        if (isEditing) {
+                            OutlinedTextField(
+                                value = currentNote,
+                                onValueChange = { currentNote = it },
+                                label = { Text("Notunuzu yazın...") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(120.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedTextColor = if (isDark) Color.White else Color.Black,
+                                    unfocusedTextColor = if (isDark) Color.White else Color.Black,
+                                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedLabelColor = if (isDark) Color.White.copy(alpha = 0.7f) else Color.Black.copy(alpha = 0.7f),
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = if (isDark) Color.White.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.5f)
+                                ),
+                                maxLines = 4
+                            )
+                        } else {
+                            if (currentNote.isNotEmpty()) {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = if (isDark) Color.White.copy(alpha = 0.05f) else Color.Black.copy(alpha = 0.05f)
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text(
+                                        text = currentNote,
+                                        fontSize = 14.sp,
+                                        color = if (isDark) Color.White else Color.Black,
+                                        modifier = Modifier.padding(12.dp)
+                                    )
+                                }
+                            } else {
+                                Text(
+                                    text = "Bu tarih için not ekleyebilir veya etkinlik planlayabilirsiniz.",
+                                    fontSize = 14.sp,
+                                    color = if (isDark) Color.White.copy(alpha = 0.8f) else Color.Black.copy(alpha = 0.8f),
+                                    style = androidx.compose.ui.text.TextStyle(
+                                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -173,7 +284,8 @@ fun CalendarGrid(
     currentMonth: YearMonth,
     selectedDate: LocalDate?,
     onDateSelected: (LocalDate) -> Unit,
-    isDark: Boolean
+    isDark: Boolean,
+    noteDates: Set<LocalDate> = emptySet()
 ) {
     val firstDayOfMonth = currentMonth.atDay(1)
     val firstDayOfWeek = firstDayOfMonth.dayOfWeek.value % 7 // Monday = 1, make it 0-based starting from Monday
@@ -202,6 +314,7 @@ fun CalendarGrid(
                 date = date,
                 isSelected = date == selectedDate,
                 isToday = date == LocalDate.now(),
+                hasNote = date != null && noteDates.contains(date),
                 onDateSelected = onDateSelected,
                 isDark = isDark
             )
@@ -214,6 +327,7 @@ fun CalendarDayItem(
     date: LocalDate?,
     isSelected: Boolean,
     isToday: Boolean,
+    hasNote: Boolean,
     onDateSelected: (LocalDate) -> Unit,
     isDark: Boolean
 ) {
@@ -243,15 +357,31 @@ fun CalendarDayItem(
         contentAlignment = Alignment.Center
     ) {
         date?.let {
-            Text(
-                text = it.dayOfMonth.toString(),
-                color = when {
-                    isSelected -> Color.White
-                    else -> if (isDark) Color.White else Color.Black
-                },
-                fontSize = 14.sp,
-                fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = it.dayOfMonth.toString(),
+                    color = when {
+                        isSelected -> Color.White
+                        else -> if (isDark) Color.White else Color.Black
+                    },
+                    fontSize = 14.sp,
+                    fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal
+                )
+
+                // Not göstergesi
+                if (hasNote && !isSelected) {
+                    Box(
+                        modifier = Modifier
+                            .size(4.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = androidx.compose.foundation.shape.CircleShape
+                            )
+                    )
+                }
+            }
         }
     }
 }
