@@ -60,14 +60,15 @@ fun BottomNavBar(
                 selected = currentRoute == "calendar_and_notes",
                 onClick = onCalendarAndNotesClick
         )
-
-        NavigationBarItem(
+/*NavigationBarItem(
             icon = { Icon(
                 painter = painterResource(id = R.drawable.user_24),
                 contentDescription = "Profile") },
             label = { Text("Profil") },
             selected = currentRoute == "profile",
             onClick = onProfileClick
-        )
+            )
+ */
+
     }
 }

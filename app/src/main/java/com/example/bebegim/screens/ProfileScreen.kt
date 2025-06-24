@@ -4,10 +4,8 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -20,17 +18,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
-import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.components.SettingsItem
-import com.example.bebegim.ui.theme.DarkPastelBlue
-import com.example.bebegim.ui.theme.PastelBlueWhite
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.Period
@@ -46,20 +39,18 @@ fun ProfileScreen(
     onNavigateToChatbot: () -> Unit,
     authViewModel: AuthViewModel
 ) {
-
-    val isDark = isSystemInDarkTheme()
-    val scrollState = rememberScrollState()
-
     Scaffold(
-        containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
-        bottomBar = {
-            BottomNavBar(
-                currentRoute = "profile",
-                onHomeClick = onNavigateBack,
-                onChatClick = onNavigateToChatbot,
-                onReportsClick = onNavigateToReports,
-                onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
-                onProfileClick = { }
+        topBar = {
+            TopAppBar(
+                title = { Text("Profil") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Geri"
+                        )
+                    }
+                },
             )
         }
     ) { paddingValues ->
@@ -67,7 +58,6 @@ fun ProfileScreen(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
-                .verticalScroll(scrollState)
         ) {
             ProfileHeader()
             Spacer(modifier = Modifier.height(16.dp))
@@ -79,12 +69,9 @@ fun ProfileScreen(
                 onLogout = onLogout,
                 onNavigateToChatbot = onNavigateToChatbot
             )
-            // Bottom padding to ensure content is not hidden behind bottom navigation
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
-
 @Composable
 fun ProfileHeader() {
     var showPhotoDialog by remember { mutableStateOf(false) }
@@ -178,7 +165,6 @@ fun ProfileHeader() {
                 Column {
                     Button(
                         onClick = {
-                            showPhotoDialog = false
                             galleryLauncher.launch("image/*")
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -186,14 +172,26 @@ fun ProfileHeader() {
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
                         onClick = {
-                            showPhotoDialog = false
                             cameraLauncher.launch(null)
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) { Text("Kamerayı Aç") }
                 }
             },
-            confirmButton = {}
+            confirmButton = {
+                Button(
+                    onClick = { showPhotoDialog = false },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Kaydet"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Kaydet")
+                }
+            }
         )
     }
 }
@@ -381,15 +379,20 @@ fun SettingsSection(
     onLogout: () -> Unit,
     onNavigateToChatbot: () -> Unit
 ) {
+
     val coroutineScope = rememberCoroutineScope()
 
     var showHelpDialog by remember { mutableStateOf(false) }
-    var showDevices by remember { mutableStateOf(false) }
-    var showPermissions by remember { mutableStateOf(false) }
+    var showDevicesDialog by remember { mutableStateOf(false) }
+    var showPrivacyDialog by remember { mutableStateOf(false) }
 
     var notificationPermission by remember { mutableStateOf(false) }
     var audioPermission by remember { mutableStateOf(false) }
     var cameraPermission by remember { mutableStateOf(false) }
+
+    var tempNotificationPermission by remember { mutableStateOf(notificationPermission) }
+    var tempAudioPermission by remember { mutableStateOf(audioPermission) }
+    var tempCameraPermission by remember { mutableStateOf(cameraPermission) }
 
     Column(
         modifier = Modifier
@@ -401,107 +404,23 @@ fun SettingsSection(
             style = MaterialTheme.typography.titleLarge
         )
         Spacer(modifier = Modifier.height(16.dp))
-
         SettingsItem(
             icon = painterResource(id = R.drawable.lock_24),
             title = "Gizlilik & Güvenlik",
             subtitle = "Veri paylaşımı ve izinleri yönet",
-            onClick = { showPermissions = !showPermissions }
-        )
-        if (showPermissions) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 32.dp, top = 8.dp, bottom = 8.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Bildirim İzni", modifier = Modifier.weight(1f))
-                    Switch(
-                        checked = notificationPermission,
-                        onCheckedChange = { notificationPermission = it }
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Ses İzni", modifier = Modifier.weight(1f))
-                    Switch(
-                        checked = audioPermission,
-                        onCheckedChange = { audioPermission = it }
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Kamera İzni", modifier = Modifier.weight(1f))
-                    Switch(
-                        checked = cameraPermission,
-                        onCheckedChange = { cameraPermission = it }
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        showPermissions = false
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFE91E63)
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Kaydet"
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Kaydet")
-                }
+            onClick = {
+                tempNotificationPermission = notificationPermission
+                tempAudioPermission = audioPermission
+                tempCameraPermission = cameraPermission
+                showPrivacyDialog = true
             }
-        }
+        )
         SettingsItem(
             icon = painterResource(id = R.drawable.baby_18),
             title = "Bağlı Cihazlar",
             subtitle = "Cihazları görüntüle ve ekle",
-            onClick = { showDevices = !showDevices }
+            onClick = { showDevicesDialog = true }
         )
-
-        if (showDevices) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 32.dp, top = 8.dp, bottom = 8.dp)
-            ) {
-                Button(
-                    onClick = { /* Cihaz 1 detaylarına gitme işlemi */ },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Text("Cihaz 1", color = MaterialTheme.colorScheme.onSecondaryContainer)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = { /* Yeni cihaz ekleme işlemi */ },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Text(
-                        "Yeni Cihaz Ekle +",
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
-            }
-        }
         SettingsItem(
             icon = painterResource(id = R.drawable.info_24),
             title = "Yardım & Destek",
@@ -552,50 +471,128 @@ fun SettingsSection(
             onNavigateToChatbot = onNavigateToChatbot
         )
     }
-}
 
-@Composable
-fun PermissionDialog(onDismiss: () -> Unit) {
-    val context = LocalContext.current
-    var permissionGranted by remember { mutableStateOf(false) }
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        permissionGranted = isGranted
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Kapat")
-            }
-        },
-        title = { Text("İzinleri Yönet") },
-        text = {
-            Column {
+    if (showPrivacyDialog) {
+        AlertDialog(
+            onDismissRequest = { showPrivacyDialog = false },
+            confirmButton = {
                 Button(
                     onClick = {
-                        launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                        notificationPermission = tempNotificationPermission
+                        audioPermission = tempAudioPermission
+                        cameraPermission = tempCameraPermission
+                        showPrivacyDialog = false
                     },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE91E63)
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Kaydet"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Kaydet")
+                }
+            },
+            title = { Text("Gizlilik & Güvenlik") },
+            text = {
+                Column {
+                    Text("Kişisel verileriniz uygulama dışında paylaşılmaz ve güvenli bir şekilde saklanır.")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("İzinler sadece uygulamanın temel işlevleri için kullanılır.")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Daha fazla bilgi için bizimle iletişime geçebilirsiniz.")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Bildirim İzni", modifier = Modifier.weight(1f))
+                        Switch(
+                            checked = tempNotificationPermission,
+                            onCheckedChange = { tempNotificationPermission = it }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Ses İzni", modifier = Modifier.weight(1f))
+                        Switch(
+                            checked = tempAudioPermission,
+                            onCheckedChange = { tempAudioPermission = it }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Kamera İzni", modifier = Modifier.weight(1f))
+                        Switch(
+                            checked = tempCameraPermission,
+                            onCheckedChange = { tempCameraPermission = it }
+                        )
+                    }
+                }
+            }
+        )
+    }
+
+    if (showDevicesDialog) {
+        AlertDialog(
+            onDismissRequest = { showDevicesDialog = false },
+            confirmButton = {
+                Button(
+                    onClick = { showDevicesDialog = false },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Kaydet"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Kaydet")
+                }
+            },
+            title = { Text("Bağlı Cihazlar") },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(if (permissionGranted) "Bildirim İzni Verildi" else "Bildirim İzni Al")
+                    Button(
+                        onClick = { /* Cihaz 1 detaylarına git */ },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        ),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Text("Cihaz 1", color = MaterialTheme.colorScheme.onSecondaryContainer)
+                    }
+                    Button(
+                        onClick = { /* Yeni cihaz ekle */ },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        ),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Text("Yeni Cihaz Ekle +", color = MaterialTheme.colorScheme.onSecondaryContainer)
+                    }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = { /* Ses izni iste */ },
-                    modifier = Modifier.fillMaxWidth()
-                ) { Text("Ses İzni Al") }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = { /* Kamera izni iste */ },
-                    modifier = Modifier.fillMaxWidth()
-                ) { Text("Kamera İzni Al") }
             }
-        }
-    )
+        )
+    }
 }
 
 @Composable
@@ -604,74 +601,56 @@ fun HelpMenu(
     onNavigateToChatbot: () -> Unit
 ) {
     var showEmailInfo by remember { mutableStateOf(false) }
+    var showSystemStatus by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {},
         title = { Text("Yardım & Destek") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(20.dp)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Button(
+                    onClick = { showEmailInfo = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE91E63)
+                    )
                 ) {
-                    Button(
-                        onClick = { showEmailInfo = true },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(64.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE91E63)
-                        )
-                    ) {
-                        Text("E-posta Desteği")
-                    }
-                    Button(
-                        onClick = {
-                            onNavigateToChatbot()
-                            onDismiss()
-                        },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(64.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE91E63)
-                        )
-                    ) {
-                        Text("Canlı Destek")
-                    }
+                    Text("E-posta Desteği")
                 }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                Button(
+                    onClick = {
+                        onNavigateToChatbot()
+                        onDismiss()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE91E63)
+                    )
                 ) {
-                    Button(
-                        onClick = { /* Dökümanlar */ },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(64.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE91E63)
-                        )
-                    ) {
-                        Text("Dökümanlar")
-                    }
-                    Button(
-                        onClick = { /* Sistem Durumu */ },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(64.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE91E63)
-                        )
-                    ) {
-                        Text("Sistem Durumu")
-                    }
+                    Text("Canlı Destek")
+                }
+                Button(
+                    onClick = { showSystemStatus = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE91E63)
+                    )
+                ) {
+                    Text("Sistem Durumu")
                 }
             }
         }
     )
-
 
     if (showEmailInfo) {
         AlertDialog(
@@ -689,21 +668,30 @@ fun HelpMenu(
             }
         )
     }
-}
 
-@Composable
-fun NotificationPermissionRequest() {
-    var permissionGranted by remember { mutableStateOf(false) }
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        permissionGranted = isGranted
-    }
-
-    Button(onClick = {
-        launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-    }) {
-        Text(if (permissionGranted) "İzin Verildi" else "Bildirim İzni Al")
+    if (showSystemStatus) {
+        AlertDialog(
+            onDismissRequest = { showSystemStatus = false },
+            confirmButton = {
+                TextButton(onClick = { showSystemStatus = false }) {
+                    Text("Kapat")
+                }
+            },
+            title = { Text("Sistem Durumu") },
+            text = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(16.dp)
+                            .padding(end = 8.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .background(Color(0xFF4CAF50))
+                    )
+                    Text("Sistem şu anda sorunsuz ve aktif olarak çalışıyor.")
+                }
+            }
+        )
     }
 }
