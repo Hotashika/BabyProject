@@ -70,7 +70,7 @@ fun AppNavigation() {
         composable(Screen.Signup.route) {
             SignupScreen(
                 onSignupSuccess = {
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.RequestBabyInfo.route) {
                         popUpTo(Screen.Auth.route) { inclusive = true }
                     }
                 },
@@ -86,13 +86,7 @@ fun AppNavigation() {
                     }
                 },
                 onBabyInfoCancelled = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Auth.route) { inclusive = true }
-                    }
-                },
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateHome = {
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.Signup.route) {
                         popUpTo(Screen.Auth.route) { inclusive = true }
                     }
                 }
@@ -127,7 +121,32 @@ fun AppNavigation() {
 
         composable(Screen.Chatbot.route) {
             ChatbotScreen(
-                onNavigateBack = { navController.navigate(Screen.Home.route) }
+                onNavigateBack = { navController.navigate(Screen.Home.route) },
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToReports = {
+                    navController.navigate(Screen.Reports.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToCalendarAndNotes = {
+                    navController.navigate(Screen.CalendarAndNotes.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToChatbot = {
+                    navController.navigate(Screen.Chatbot.route) {
+                        launchSingleTop = true
+                    }
+                }
             )
         }
 
