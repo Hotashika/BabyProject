@@ -70,11 +70,11 @@ dependencies {
     // Ktor
     implementation(libs.ktor.client.okhttp)
 
-    //
+    // Material Icons Extended
     implementation(libs.androidx.material.icons.extended)
 
     // ComposeCharts
-    /*implementation ("io.github.ehsannarmani:compose-charts:0.1.7")*/
+    // implementation("io.github.ehsannarmani:compose-charts:0.1.7")
 
     // Jaikeerthick's Composable Graphs
     implementation("com.github.jaikeerthick:Composable-Graphs:v1.2.3")
@@ -82,5 +82,8 @@ dependencies {
     // CMPCharts
     implementation("network.chaintech:cmpcharts:2.0.4")
 
+    // CodeAndTheroid's Compose Graphs
 
+    // YCharts
+    implementation("co.yml:ycharts:2.1.0")
 }
