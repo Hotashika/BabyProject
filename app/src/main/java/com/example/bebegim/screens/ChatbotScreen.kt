@@ -339,4 +339,16 @@ fun TypingIndicator() {
         }
     }
 }
-
+@Preview(showBackground = true)
+@Composable
+fun ChatbotScreenPreview() {
+    ChatbotScreen(
+        onNavigateBack = {},
+        onNavigateToChatbot = {},
+        onNavigateToHome = {},
+        onNavigateToReports = {},
+        onNavigateToProfile = {},
+        onNavigateToThermalCamera = {},
+        onNavigateToCalendarAndNotes = {}
+    )
+}
