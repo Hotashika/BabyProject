@@ -6,7 +6,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -20,13 +23,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
+import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.components.SettingsItem
+import com.example.bebegim.ui.theme.DarkPastelBlue
+import com.example.bebegim.ui.theme.PastelBlueWhite
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.Period
@@ -66,7 +73,7 @@ fun ProfileScreen(
                 onChatClick = onNavigateToChatbot,
                 onReportsClick = onNavigateToReports,
                 onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
-                onProfileClick = { }
+                onThermalCameraClick = { /* TODO: handle navigation to thermal camera */ }
             )
         }
     ) { paddingValues ->
@@ -78,7 +85,7 @@ fun ProfileScreen(
         ) {
             ProfileHeader()
             Spacer(modifier = Modifier.height(16.dp))
-            BabyInformation()
+            BabyInformationDisplay(babyInfo = BabyInfo())
             Spacer(modifier = Modifier.height(16.dp))
             SettingsSection(
                 authViewModel = authViewModel,

@@ -25,6 +25,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,7 +42,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bebegim.data.GetThermalData
-import com.example.bebegim.data.GetVideo
 import com.example.bebegim.model.VitalData
 import com.example.bebegim.model.VitalType
 import kotlinx.coroutines.delay
@@ -69,6 +69,7 @@ fun HomeScreen(
     onNavigateToReports: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToCalendarAndNotes: () -> Unit,
+    onNavigateToThermalCamera: () -> Unit,
     onNavigateToAdmin: () -> Unit
 ) {
     val isAdmin = remember { mutableStateOf(true) }
@@ -179,8 +180,8 @@ fun HomeScreen(
                 onHomeClick = { },
                 onChatClick = onNavigateToChatbot,
                 onReportsClick = onNavigateToReports,
-                onProfileClick = onNavigateToProfile,
                 onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
+                onThermalCameraClick = onNavigateToThermalCamera, // <-- Add this line
             )
         }
     ) { paddingValues ->
@@ -432,6 +433,7 @@ fun HomeScreenPreview() {
         onNavigateToReports = {},
         onNavigateToProfile = {},
         onNavigateToCalendarAndNotes = {},
+        onNavigateToThermalCamera = {},
         onNavigateToAdmin = {}
     )
 }

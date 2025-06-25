@@ -17,8 +17,7 @@ fun BottomNavBar(
     onChatClick: () -> Unit,
     onReportsClick: () -> Unit,
     onCalendarAndNotesClick: () -> Unit,
-    onProfileClick: () -> Unit,
-
+    onThermalCameraClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavigationBar(
@@ -60,15 +59,16 @@ fun BottomNavBar(
                 selected = currentRoute == "calendar_and_notes",
                 onClick = onCalendarAndNotesClick
         )
-/*NavigationBarItem(
-            icon = { Icon(
-                painter = painterResource(id = R.drawable.user_24),
-                contentDescription = "Profile") },
-            label = { Text("Profil") },
-            selected = currentRoute == "profile",
-            onClick = onProfileClick
-            )
- */
+
+        NavigationBarItem(
+            icon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.camera_24),
+                    contentDescription = "thermal_camera") },
+            label = { Text("Termal\nKamera") },
+            selected = currentRoute == "thermal_camera",
+            onClick = onThermalCameraClick
+        )
 
     }
 }

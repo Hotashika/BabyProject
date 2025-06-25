@@ -45,11 +45,10 @@ import com.example.bebegim.ui.theme.PastelBlueWhite
 
 @Composable
 fun SignupScreen(
-    onSignupSuccess: (Boolean) -> Unit,
+    onSignupSuccess: (String, String, String) -> Unit,
     onNavigateBack: () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
-
     val context = LocalContext.current
     val authViewModel: AuthViewModel = viewModel()
 
@@ -89,7 +88,7 @@ fun SignupScreen(
         SignupTextField(
             value = fullName,
             onValueChange = { fullName = it },
-            label = "Tam Adınız",
+            label = "Ebeveyn Adı",
             iconRes = com.example.bebegim.R.drawable.user_24,
             keyboardType = KeyboardType.Text
         )
@@ -114,24 +113,14 @@ fun SignupScreen(
         )
 
         LoadingButton(
-            text = "Kayıt Ol",
+            text = "Devam Et",
             isLoading = isLoadingRegister,
             onClick = {
                 if (fullName.isBlank() || email.isBlank() || password.isBlank()) {
                     authViewModel.errorMessage = "Lütfen tüm alanları doldurun."
                     return@LoadingButton
                 }
-                authViewModel.signUpNewUser(
-                    email = email,
-                    password = password,
-                    onSuccess = {
-                        val isAdmin = email.contains("admin")
-                        onSignupSuccess(isAdmin)
-                    },
-                    onError = {
-                        authViewModel.errorMessage = "Kayıt başarısız. Email zaten kullanılıyor olabilir veya şifre çok zayıf."
-                    }
-                )
+                onSignupSuccess(fullName, email, password)
             },
             modifier = Modifier.fillMaxWidth()
         )

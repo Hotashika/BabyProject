@@ -2,6 +2,9 @@ package com.example.bebegim.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,6 +21,7 @@ import com.example.bebegim.screens.ProfileScreen
 import com.example.bebegim.screens.ReportsScreen
 import com.example.bebegim.screens.RequestBabyInfo
 import com.example.bebegim.screens.SignupScreen
+import com.example.bebegim.screens.ThermalScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -30,12 +34,16 @@ sealed class Screen(val route: String) {
     object Auth : Screen("auth")
     object CalendarAndNotes : Screen("calendar_and_notes")
     object RequestBabyInfo : Screen("request_baby_info")
+    object ThermalCamera : Screen("thermal_camera")
 }
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    var signupFullName by remember { mutableStateOf("") }
+    var signupEmail by remember { mutableStateOf("") }
+    var signupPassword by remember { mutableStateOf("") }
+
 
     NavHost(navController = navController, startDestination = Screen.Auth.route) {
         composable(Screen.Auth.route) {
@@ -68,8 +76,12 @@ fun AppNavigation() {
         }
 
         composable(Screen.Signup.route) {
+            val authViewModel: AuthViewModel = viewModel()
             SignupScreen(
-                onSignupSuccess = {
+                onSignupSuccess = { fullName, email, password ->
+                    signupFullName = fullName
+                    signupEmail = email
+                    signupPassword = password
                     navController.navigate(Screen.RequestBabyInfo.route) {
                         popUpTo(Screen.Auth.route) { inclusive = true }
                     }
@@ -79,15 +91,30 @@ fun AppNavigation() {
         }
 
         composable(Screen.RequestBabyInfo.route) {
+            val authViewModel: AuthViewModel = viewModel()
             RequestBabyInfo(
+                signupFullName   = signupFullName,
+                signupEmail      = signupEmail,
+                signupPassword   = signupPassword,
                 onBabyInfoSubmitted = {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Auth.route) { inclusive = true }
                     }
                 },
                 onBabyInfoCancelled = {
-                    navController.navigate(Screen.Signup.route) {
+                    navController.navigate(Screen.Auth.route) {
+                        popUpTo(Screen.RequestBabyInfo.route) { inclusive = true }
+                    }
+                },
+                onSignupSuccess = { _, _, _ ->
+                    navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Auth.route) { inclusive = true }
+                    }
+                },
+                authViewModel    = authViewModel,
+                onLogout         = {
+                    navController.navigate(Screen.Auth.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
                     }
                 }
             )
@@ -112,6 +139,11 @@ fun AppNavigation() {
                 },
                 onNavigateToCalendarAndNotes = {
                     navController.navigate(Screen.CalendarAndNotes.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToThermalCamera = {
+                    navController.navigate(Screen.ThermalCamera.route) {
                         launchSingleTop = true
                     }
                 },
@@ -146,6 +178,11 @@ fun AppNavigation() {
                     navController.navigate(Screen.Chatbot.route) {
                         launchSingleTop = true
                     }
+                },
+                onNavigateToThermalCamera = {
+                    navController.navigate(Screen.ThermalCamera.route) {
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -165,6 +202,11 @@ fun AppNavigation() {
                 },
                 onNavigateToChatbot = {
                     navController.navigate(Screen.Chatbot.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToThermalCamera = {
+                    navController.navigate(Screen.ThermalCamera.route) {
                         launchSingleTop = true
                     }
                 }
@@ -188,9 +230,36 @@ fun AppNavigation() {
                     navController.navigate(Screen.Reports.route) {
                         launchSingleTop = true
                     }
+                },
+                onNavigateToThermalCamera = {
+                    navController.navigate(Screen.ThermalCamera.route) {
+                        launchSingleTop = true
+                    }
                 }
             )
         }
+
+        composable(Screen.ThermalCamera.route) {
+            ThermalScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToChatbot = {
+                    navController.navigate(Screen.Chatbot.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToReports = {
+                    navController.navigate(Screen.Reports.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToCalendarAndNOte = {
+                    navController.navigate(Screen.CalendarAndNotes.route) {
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
 
         composable(Screen.Profile.route) {
             val authViewModel: AuthViewModel = viewModel()
