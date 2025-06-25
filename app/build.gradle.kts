@@ -67,6 +67,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.supabase.postgrest)
 
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.4.0")
     // Ktor
     implementation(libs.ktor.client.okhttp)
 
