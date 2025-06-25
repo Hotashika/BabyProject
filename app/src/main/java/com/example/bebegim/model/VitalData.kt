@@ -13,4 +13,7 @@ enum class VitalType(val displayName: String) {
     HUMIDITY("Nem"),
     SLEEP("Uyku"),
     CO2("Hava Kalitesi"),
+    BABY_HEAD_TEMPERATURE("Bebek Baş Sıcaklığı"),
+    BABY_UPPERBODY_TEMPERATURE("Bebek Vücut Sıcaklığı"),
+    BABY_LOWERBODY_TEMPERATURE("Bebek Alt Vücut Sıcaklığı"),
 }

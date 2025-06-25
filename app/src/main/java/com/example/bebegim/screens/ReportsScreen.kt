@@ -45,6 +45,7 @@ fun ReportsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToCalendarAndNotes: () -> Unit,
+    onNavigateToThermalCamera: () -> Unit,
     onNavigateToChatbot: () -> Unit
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -56,9 +57,9 @@ fun ReportsScreen(
                 currentRoute = "reports",
                 onHomeClick = onNavigateBack,
                 onChatClick = onNavigateToChatbot,
-                onProfileClick = onNavigateToProfile,
                 onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
-                onReportsClick = {}
+                onReportsClick = {},
+                onThermalCameraClick = onNavigateToThermalCamera // <-- Add this line
             )
         }
     ) { paddingValues ->

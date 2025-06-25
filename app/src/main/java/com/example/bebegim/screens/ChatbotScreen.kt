@@ -72,6 +72,7 @@ fun ChatbotScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToReports: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    onNavigateToThermalCamera: () -> Unit,
     onNavigateToCalendarAndNotes: () -> Unit
 ) {
     val messages = remember { mutableStateListOf<ChatMessage>() }
@@ -120,11 +121,11 @@ fun ChatbotScreen(
         bottomBar = {
             BottomNavBar(
                 currentRoute = "chatbot",
-                onHomeClick = { onNavigateToHome },
+                onHomeClick = onNavigateToHome,
                 onChatClick = onNavigateToChatbot,
                 onReportsClick = onNavigateToReports,
-                onProfileClick = onNavigateToProfile,
                 onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
+                onThermalCameraClick = onNavigateToThermalCamera, // <-- Add this line
             )
         }
 

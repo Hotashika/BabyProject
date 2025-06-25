@@ -1,30 +1,60 @@
 package com.example.bebegim.screens
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.bebegim.R
+import com.example.bebegim.auth.AuthViewModel
+import com.example.bebegim.ui.components.LoadingButton
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
+import com.example.bebegim.ui.theme.Poppins
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun RequestBabyInfo(
+    signupFullName: String,
+    signupEmail: String,
+    signupPassword: String,
     onBabyInfoSubmitted: (Boolean) -> Unit,
-    onBabyInfoCancelled: (Boolean) -> Unit
+    onBabyInfoCancelled: (Boolean) -> Unit,
+    onSignupSuccess: (String, String, String) -> Unit,
+    authViewModel: AuthViewModel,
+    onLogout: () -> Unit,
 ){
     var babyFullName by remember { mutableStateOf("") }
     var babyGender by remember { mutableStateOf("") }
@@ -33,23 +63,33 @@ fun RequestBabyInfo(
     var babyWeight by remember { mutableStateOf("") }
     var babyHeight by remember { mutableStateOf("") }
 
+    val coroutineScope = rememberCoroutineScope()
+    var showDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val isLoadingRegister = authViewModel.isLoadingRegister
+
     val isDark = isSystemInDarkTheme()
     Column (
         modifier = Modifier
             .fillMaxSize()
             .background(if (isDark) DarkPastelBlue else PastelBlueWhite)
             .padding(24.dp)
-            .padding(bottom = 60.dp)
+            .padding(top = 24.dp)
+/*            .padding(bottom = 60.dp)*/
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(0.dp, Alignment.CenterVertically),
     ){
         Text(
             text = "Bebek Bilgileri",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(bottom = 16.dp)
+            fontFamily = Poppins,
+            fontWeight = FontWeight.ExtraBold,
+            fontSize = 28.sp,
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center
         )
+
+        Spacer(modifier = Modifier.height(50.dp))
 
         BabyFullNameTextField(
             value = babyFullName,
@@ -65,7 +105,7 @@ fun RequestBabyInfo(
             onValueChange = { babyGender = it },
             label = "Cinsiyet",
             placeholder = "Cinsiyet Seçiniz",
-            iconRes = R.drawable.user_24
+/*            iconRes = R.drawable.user_24*/
         )
 
         BabyBirthDateTextField(
@@ -73,25 +113,17 @@ fun RequestBabyInfo(
             onValueChange = { babyBirthDate = it },
             label = "Doğum Tarihi",
             placeholder = "GG/AA/YYYY",
-            iconRes = R.drawable.user_24,
+            iconRes = R.drawable.cake_birthday_20,
             keyboardType = KeyboardType.Number
         )
 
-        BabyBloodTypeTextField(
-            value = babyBloodType,
-            onValueChange = { babyBloodType = it },
-            label = "Kan Grubu",
-            placeholder = "Kan Grubu Seçiniz",
-            iconRes = R.drawable.user_24,
-            keyboardType = KeyboardType.Text
-        )
 
         BabyWeightTextField(
             value = babyWeight,
             onValueChange = { babyWeight = it },
             label = "Kilo (kg)",
             placeholder = "Bebeğinizin kilosunu giriniz",
-            iconRes = R.drawable.user_24,
+            iconRes = R.drawable.scale_20,
             keyboardType = KeyboardType.Decimal
         )
 
@@ -100,8 +132,15 @@ fun RequestBabyInfo(
             onValueChange = { babyHeight = it },
             label = "Boy (cm)",
             placeholder = "Bebeğinizin boyunu giriniz",
-            iconRes = R.drawable.user_24,
+            iconRes = R.drawable.measuring_tape_20,
             keyboardType = KeyboardType.Decimal
+        )
+
+        BabyBloodTypeDropDownField(
+            value = babyBloodType,
+            onValueChange = { babyBloodType = it },
+            label = "Kan Grubu",
+            iconRes = R.drawable.blood_20
         )
 
         Spacer(modifier = Modifier.padding(16.dp))
@@ -111,7 +150,9 @@ fun RequestBabyInfo(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedButton(
-                onClick = { onBabyInfoCancelled(true) },
+                onClick = {
+                    showDialog = true
+                          },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = MaterialTheme.colorScheme.primary
@@ -120,15 +161,37 @@ fun RequestBabyInfo(
                 Text("İptal")
             }
 
-            Button(
-                onClick = { onBabyInfoSubmitted(true) },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+            LoadingButton(
+                text = "Kaydı Tamamla",
+                isLoading = isLoadingRegister,
+                onClick = {
+                    if (babyFullName.isNotEmpty() /* && other checks */) {
+                        authViewModel.signUpNewUser(
+                            email = signupEmail,
+                            password = signupPassword,
+                            onSuccess = {
+                                onSignupSuccess(signupFullName, signupEmail, signupPassword)
+                                onBabyInfoSubmitted(true)
+                            },
+                            onError = {
+                                authViewModel.errorMessage = "Kayıt başarısız…"
+                            }
+                        )
+                    } else {
+                        Toast.makeText(context, "Lütfen tüm alanları doldurun.", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            )
+            if (showDialog) {
+                AlertDialogComponent(
+                    onDismiss = { showDialog = false },
+                    authViewModel = authViewModel,
+                    context = context,
+                    coroutineScope = coroutineScope,
+                    onLogout = onLogout,
+                    onBabyInfoCancelled = onBabyInfoCancelled
                 )
-            ) {
-                Text("Kaydet")
             }
         }
     }
@@ -425,15 +488,17 @@ private fun BabyHeightTextField(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BabyBloodTypeTextField(
+fun BabyBloodTypeDropDownField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    placeholder: String,
-    iconRes: Int,
-    keyboardType: KeyboardType
+    iconRes: Int
 ) {
+    val items = listOf("A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-")
+    var expanded by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -443,52 +508,184 @@ private fun BabyBloodTypeTextField(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier
-                .padding(bottom = 0.dp)
-                .padding(start = 16.dp),
+            modifier = Modifier.padding(start = 16.dp, bottom = 0.dp)
         )
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            placeholder = {
-                if (value.isEmpty()) {
-                    Text(placeholder, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+        ) {
+            OutlinedTextField(
+                readOnly = true,
+                value = value,
+                onValueChange = {},
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(id = iconRes),
+                        contentDescription = "$label icon",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                placeholder = {
+                    Text(
+                        text = "Kan grubu seçiniz",
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                },
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurface
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                items.forEach { selectedItem ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = selectedItem,
+                                color = if (selectedItem == value)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.onSurface
+                            )
+                        },
+                        onClick = {
+                            onValueChange(selectedItem)
+                            expanded = false
+                        }
+                    )
                 }
-            },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(iconRes),
-                    contentDescription = "$label icon",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = keyboardType,
-                imeAction = ImeAction.Next
-            ),
-            shape = RoundedCornerShape(16.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                focusedLabelColor = MaterialTheme.colorScheme.primary,
-                cursorColor = MaterialTheme.colorScheme.primary,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedLabelColor = MaterialTheme.colorScheme.onSurface
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .animateContentSize()
-        )
+            }
+        }
     }
 }
 
-@Preview
+
+
 @Composable
-fun RequestBabyInfoPreview() {
-    RequestBabyInfo(
-        onBabyInfoSubmitted = {},
-        onBabyInfoCancelled = {}
-    )
+fun AlertDialogComponent(
+    onDismiss: () -> Unit,
+    authViewModel: AuthViewModel,
+    context: Context,
+    coroutineScope: CoroutineScope,
+    onLogout: () -> Unit,
+    onBabyInfoCancelled: (Boolean) -> Unit
+) {
+    Dialog(onDismissRequest = { onDismiss() }) {
+        Card(
+            modifier = Modifier
+                .padding(20.dp)
+                .wrapContentHeight()
+                .fillMaxWidth(0.9f),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(48.dp)
+                )
+
+                Text(
+                    text = "Kayıt İptal Et",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center
+                )
+
+                Text(
+                    text = "Kaydınızı iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 20.sp
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { onDismiss() },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outline
+                        )
+                    ) {
+                        Text(
+                            text = "Hayır",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+
+                    Button(
+                        onClick = {
+                            coroutineScope.launch {
+                                authViewModel.logout()
+                                onLogout()
+                            }
+                            onBabyInfoCancelled(true)
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        )
+                    ) {
+                        Text(
+                            text = "Evet",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HideKeyboardOnTapAlternative(
+    content: @Composable () -> Unit
+) {
+    val focusManager = LocalFocusManager.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            }
+    ) {
+        content()
+    }
 }

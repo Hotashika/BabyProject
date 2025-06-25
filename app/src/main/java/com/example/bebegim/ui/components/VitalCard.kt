@@ -17,8 +17,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.filled.AddReaction
+import androidx.compose.material.icons.filled.AddToDrive
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Light
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ThumbUp
@@ -28,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.bebegim.model.VitalData
@@ -99,6 +103,18 @@ fun VitalCard(
             Icons.Default.Favorite,
             MaterialTheme.colorScheme.secondaryContainer
         )
+        VitalType.BABY_HEAD_TEMPERATURE -> Pair(
+            Icons.Default.Light,
+            MaterialTheme.colorScheme.errorContainer
+        )
+        VitalType.BABY_LOWERBODY_TEMPERATURE -> Pair(
+            Icons.Default.AddReaction,
+            MaterialTheme.colorScheme.tertiaryContainer
+        )
+        VitalType.BABY_UPPERBODY_TEMPERATURE -> Pair(
+            Icons.Default.AddToDrive,
+            MaterialTheme.colorScheme.primaryContainer
+        )
     }
 
     Card(
@@ -122,6 +138,9 @@ fun VitalCard(
                     VitalType.HUMIDITY -> MaterialTheme.colorScheme.tertiary
                     VitalType.SLEEP -> MaterialTheme.colorScheme.primary
                     VitalType.CO2 -> MaterialTheme.colorScheme.secondary
+                    VitalType.BABY_HEAD_TEMPERATURE -> MaterialTheme.colorScheme.error
+                    VitalType.BABY_UPPERBODY_TEMPERATURE -> MaterialTheme.colorScheme.primary
+                    VitalType.BABY_LOWERBODY_TEMPERATURE -> MaterialTheme.colorScheme.tertiary
                 },
                 modifier = Modifier.size(24.dp)
             )

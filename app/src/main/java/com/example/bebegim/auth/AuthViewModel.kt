@@ -40,6 +40,17 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    var email by mutableStateOf("")
+        private set
+
+    var password by mutableStateOf("")
+        private set
+
+    fun setCredentials(email: String, password: String) {
+        this.email = email
+        this.password = password
+    }
+
     fun signInWithEmail(
         email: String,
         password: String,
