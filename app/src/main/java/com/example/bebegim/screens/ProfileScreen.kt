@@ -1,14 +1,19 @@
 package com.example.bebegim.screens
 
+import android.app.DatePickerDialog
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,16 +23,32 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
+import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.components.SettingsItem
+import com.example.bebegim.ui.theme.DarkPastelBlue
+import com.example.bebegim.ui.theme.PastelBlueWhite
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
+import java.util.*
+
+// BabyInfo data class to store baby information
+data class BabyInfo(
+    val name: String = "",
+    val birthDate: String = "",
+    val gender: String = "",
+    val weight: String = "",
+    val height: String = "",
+    val bloodType: String = ""
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,18 +60,20 @@ fun ProfileScreen(
     onNavigateToChatbot: () -> Unit,
     authViewModel: AuthViewModel
 ) {
+
+    val isDark = isSystemInDarkTheme()
+    val scrollState = rememberScrollState()
+
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Profil") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Geri"
-                        )
-                    }
-                },
+        containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
+        bottomBar = {
+            BottomNavBar(
+                currentRoute = "profile",
+                onHomeClick = onNavigateBack,
+                onChatClick = onNavigateToChatbot,
+                onReportsClick = onNavigateToReports,
+                onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
+                onThermalCameraClick = { /* TODO: handle navigation to thermal camera */ }
             )
         }
     ) { paddingValues ->
@@ -58,10 +81,11 @@ fun ProfileScreen(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
+                .verticalScroll(scrollState)
         ) {
             ProfileHeader()
             Spacer(modifier = Modifier.height(16.dp))
-            BabyInformation()
+            BabyInformationDisplay(babyInfo = BabyInfo())
             Spacer(modifier = Modifier.height(16.dp))
             SettingsSection(
                 authViewModel = authViewModel,
@@ -69,6 +93,8 @@ fun ProfileScreen(
                 onLogout = onLogout,
                 onNavigateToChatbot = onNavigateToChatbot
             )
+            // Bottom padding to ensure content is not hidden behind bottom navigation
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -197,28 +223,39 @@ fun ProfileHeader() {
 }
 
 fun calculateBabyAge(birthDateString: String): String {
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    val birthDate = LocalDate.parse(birthDateString, formatter)
-    val today = LocalDate.now()
-    val period = Period.between(birthDate, today)
-    return "${period.years} yıl, ${period.months} ay, ${period.days} gün"
-}
-
-@Composable
-fun BabyInformation() {
-    var isEditing by remember { mutableStateOf(false) }
-    var babyName by remember { mutableStateOf("Mehmet Yılmaz") }
-    var babyBirthDate by remember { mutableStateOf("2022-08-15") }
-    var babyGender by remember { mutableStateOf("Erkek") }
-    var babyWeight by remember { mutableStateOf("5.2 kg") }
-    var babyHeight by remember { mutableStateOf("58 cm") }
-    var babyBloodType by remember { mutableStateOf("A+") }
-
-    val yas = try {
-        calculateBabyAge(babyBirthDate)
+    return try {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val birthDate = LocalDate.parse(birthDateString, formatter)
+        val today = LocalDate.now()
+        val period = Period.between(birthDate, today)
+        "${period.years} yıl, ${period.months} ay, ${period.days} gün"
     } catch (e: Exception) {
         "-"
     }
+}
+
+@Composable
+fun BabyInformationDisplay(babyInfo: BabyInfo) {
+    var isEditing by remember { mutableStateOf(false) }
+    var editableBabyInfo by remember { mutableStateOf(babyInfo) }
+
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
+
+    // Date picker dialog for editing
+    val datePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            editableBabyInfo = editableBabyInfo.copy(
+                birthDate = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
+            )
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
+
+    val yas = calculateBabyAge(if (isEditing) editableBabyInfo.birthDate else babyInfo.birthDate)
 
     Column(
         modifier = Modifier
@@ -235,7 +272,10 @@ fun BabyInformation() {
                 modifier = Modifier.weight(1f)
             )
             if (isEditing) {
-                IconButton(onClick = { isEditing = false }) {
+                IconButton(onClick = {
+                    isEditing = false
+                    // Save changes here if needed
+                }) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Kaydet"
@@ -262,19 +302,24 @@ fun BabyInformation() {
                     Spacer(modifier = Modifier.width(8.dp))
                     if (isEditing) {
                         OutlinedTextField(
-                            value = babyName,
-                            onValueChange = { babyName = it },
+                            value = editableBabyInfo.name,
+                            onValueChange = { editableBabyInfo = editableBabyInfo.copy(name = it) },
                             label = { Text("Bebek Adı") },
                             modifier = Modifier.weight(1f)
                         )
                     } else {
                         Text(
-                            text = babyName,
+                            text = babyInfo.name,
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.weight(1f)
                         )
                     }
-                    IconButton(onClick = { isEditing = !isEditing }) {
+                    IconButton(onClick = {
+                        if (isEditing) {
+                            editableBabyInfo = babyInfo // Reset changes
+                        }
+                        isEditing = !isEditing
+                    }) {
                         Icon(
                             painter = painterResource(id = R.drawable.edit_24),
                             contentDescription = "Bebek Bilgilerini Düzenle"
@@ -287,34 +332,45 @@ fun BabyInformation() {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     if (isEditing) {
-                        OutlinedTextField(
-                            value = babyBirthDate,
-                            onValueChange = { babyBirthDate = it },
-                            label = { Text("Doğum Tarihi (yyyy-MM-dd)") },
-                            modifier = Modifier.weight(1f)
-                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            OutlinedTextField(
+                                value = editableBabyInfo.birthDate,
+                                onValueChange = { },
+                                label = { Text("Doğum Tarihi") },
+                                modifier = Modifier.fillMaxWidth(),
+                                readOnly = true,
+                                trailingIcon = {
+                                    IconButton(onClick = { datePickerDialog.show() }) {
+                                        Icon(
+                                            imageVector = Icons.Default.DateRange,
+                                            contentDescription = "Tarih Seç"
+                                        )
+                                    }
+                                }
+                            )
+                        }
                         Spacer(modifier = Modifier.width(8.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text("Cinsiyet")
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 RadioButton(
-                                    selected = babyGender == "Erkek",
-                                    onClick = { babyGender = "Erkek" }
+                                    selected = editableBabyInfo.gender == "Erkek",
+                                    onClick = { editableBabyInfo = editableBabyInfo.copy(gender = "Erkek") }
                                 )
                                 Text("Erkek")
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 RadioButton(
-                                    selected = babyGender == "Kız",
-                                    onClick = { babyGender = "Kız" }
+                                    selected = editableBabyInfo.gender == "Kız",
+                                    onClick = { editableBabyInfo = editableBabyInfo.copy(gender = "Kız") }
                                 )
                                 Text("Kız")
                             }
                         }
                     } else {
                         InfoItem(label = "Yaş", value = yas)
-                        InfoItem(label = "Doğum Tarihi", value = babyBirthDate)
-                        InfoItem(label = "Cinsiyet", value = babyGender)
+                        InfoItem(label = "Doğum Tarihi", value = babyInfo.birthDate)
+                        InfoItem(label = "Cinsiyet", value = babyInfo.gender)
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -324,29 +380,29 @@ fun BabyInformation() {
                 ) {
                     if (isEditing) {
                         OutlinedTextField(
-                            value = babyWeight,
-                            onValueChange = { babyWeight = it },
+                            value = editableBabyInfo.weight,
+                            onValueChange = { editableBabyInfo = editableBabyInfo.copy(weight = it) },
                             label = { Text("Kilo") },
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedTextField(
-                            value = babyHeight,
-                            onValueChange = { babyHeight = it },
+                            value = editableBabyInfo.height,
+                            onValueChange = { editableBabyInfo = editableBabyInfo.copy(height = it) },
                             label = { Text("Boy") },
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedTextField(
-                            value = babyBloodType,
-                            onValueChange = { babyBloodType = it },
+                            value = editableBabyInfo.bloodType,
+                            onValueChange = { editableBabyInfo = editableBabyInfo.copy(bloodType = it) },
                             label = { Text("Kan Grubu") },
                             modifier = Modifier.weight(1f)
                         )
                     } else {
-                        InfoItem(label = "Kilo", value = babyWeight)
-                        InfoItem(label = "Boy", value = babyHeight)
-                        InfoItem(label = "Kan Grubu", value = babyBloodType)
+                        InfoItem(label = "Kilo", value = babyInfo.weight)
+                        InfoItem(label = "Boy", value = babyInfo.height)
+                        InfoItem(label = "Kan Grubu", value = babyInfo.bloodType)
                     }
                 }
             }
