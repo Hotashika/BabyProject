@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
@@ -25,8 +26,10 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
@@ -34,6 +37,7 @@ import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.components.SettingsItem
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
+import com.example.bebegim.ui.theme.Poppins
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.Period
@@ -66,16 +70,31 @@ fun ProfileScreen(
 
     Scaffold(
         containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
-        bottomBar = {
-            BottomNavBar(
-                currentRoute = "profile",
-                onHomeClick = onNavigateBack,
-                onChatClick = onNavigateToChatbot,
-                onReportsClick = onNavigateToReports,
-                onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
-                onThermalCameraClick = { /* TODO: handle navigation to thermal camera */ }
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Profil",
+                        fontFamily = Poppins,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Geri"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -750,4 +769,17 @@ fun HelpMenu(
             }
         )
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ProfileScreenPreview() {
+    ProfileScreen(
+        onNavigateBack = {},
+        onLogout = {},
+        onNavigateToReports = {},
+        onNavigateToCalendarAndNotes = {},
+        onNavigateToChatbot = {},
+        authViewModel = AuthViewModel()
+    )
 }

@@ -27,7 +27,8 @@ fun BottomNavBar(
             icon = { Icon(
                 painter = painterResource(id = R.drawable.home_24),
                 contentDescription = "Home") },
-            label = { Text("Ev") },
+            label = { Text("Ev\n" +
+                    "") },
             selected = currentRoute == "home",
             onClick = onHomeClick
         )
@@ -36,7 +37,8 @@ fun BottomNavBar(
             icon = { Icon(
                 painter = painterResource(id = R.drawable.messages_24),
                 contentDescription = "Chat") },
-            label = { Text("Asistan") },
+            label = { Text("Asistan\n" +
+                    "") },
             selected = currentRoute == "chatbot",
             onClick = onChatClick
         )
@@ -45,7 +47,8 @@ fun BottomNavBar(
             icon = { Icon(
                 painter = painterResource(id = R.drawable.menu_burger_24),
                 contentDescription = "Reports") },
-            label = { Text("Detaylar") },
+            label = { Text("Detaylar\n" +
+                    "") },
             selected = currentRoute == "reports",
             onClick = onReportsClick
         )
