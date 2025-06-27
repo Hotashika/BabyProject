@@ -88,4 +88,13 @@ dependencies {
 
     // YCharts
     implementation("co.yml:ycharts:2.1.0")
+
+    // Dautovicharis's Charts (doğru koordinatlar)
+    implementation("io.github.dautovicharis:charts:2.0.0")
+
+    // Örnekler (diğer chart kütüphaneleri)
+    implementation("com.github.jaikeerthick:Composable-Graphs:v1.2.3")
+    implementation("network.chaintech:cmpcharts:2.0.4")
+    implementation("co.yml:ycharts:2.1.0")
+
 }

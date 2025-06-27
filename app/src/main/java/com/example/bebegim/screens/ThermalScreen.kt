@@ -260,7 +260,7 @@ fun ThermalScreen(
 }
 
 @Composable
-fun ThermalVitals(vital : VitalData, modifier: Modifier = Modifier){
+fun ThermalVitals(vital : VitalData, modifier: Modifier = Modifier) {
     val colorScheme = MaterialTheme.colorScheme
 
     Card (
@@ -271,7 +271,39 @@ fun ThermalVitals(vital : VitalData, modifier: Modifier = Modifier){
         ),
         modifier = modifier.height(110.dp)
     ) {
-
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = vital.type.displayName,
+                style = MaterialTheme.typography.labelSmall,
+                color = colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                fontFamily = Poppins,
+                fontWeight = FontWeight.Medium,
+                fontSize = 10.sp
+            )
+            Text(
+                text = vital.value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = colorScheme.primary,
+                fontFamily = Poppins,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = vital.status,
+                style = MaterialTheme.typography.bodySmall,
+                color = colorScheme.secondary,
+                fontFamily = Poppins,
+                fontWeight = FontWeight.Light,
+                fontSize = 9.sp,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
