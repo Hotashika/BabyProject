@@ -59,7 +59,7 @@ fun ReportsScreen(
                 onChatClick = onNavigateToChatbot,
                 onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
                 onReportsClick = {},
-                onThermalCameraClick = onNavigateToThermalCamera // <-- Add this line
+                onThermalCameraClick = onNavigateToThermalCamera
             )
         }
     ) { paddingValues ->
