@@ -117,7 +117,7 @@ fun ThermalScreen(
             }
 
             // 20 saniyede bir güncelle
-            delay(20000)
+            delay(10000)
         }
     }
 

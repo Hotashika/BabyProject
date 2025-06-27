@@ -104,7 +104,7 @@ fun ProfileScreen(
         ) {
             ProfileHeader()
             Spacer(modifier = Modifier.height(16.dp))
-            BabyInformationDisplay(babyInfo = BabyInfo())
+            BabyInformationDisplay()
             Spacer(modifier = Modifier.height(16.dp))
             SettingsSection(
                 authViewModel = authViewModel,
@@ -117,6 +117,7 @@ fun ProfileScreen(
         }
     }
 }
+
 @Composable
 fun ProfileHeader() {
     var showPhotoDialog by remember { mutableStateOf(false) }
@@ -177,12 +178,12 @@ fun ProfileHeader() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Ayşe Yılmaz",
+            text = "Ceren Güneş",
             style = MaterialTheme.typography.headlineMedium
         )
 
         Text(
-            text = "ayse@example.com",
+            text = "cerengunes@eternal.com",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -254,7 +255,21 @@ fun calculateBabyAge(birthDateString: String): String {
 }
 
 @Composable
-fun BabyInformationDisplay(babyInfo: BabyInfo) {
+fun BabyInformationDisplay() {
+    // Ana bebek bilgilerini state olarak tutuyoruz
+    var babyInfo by remember {
+        mutableStateOf(
+            BabyInfo(
+                name = "",
+                birthDate = "",
+                gender = "",
+                weight = "",
+                height = "",
+                bloodType = ""
+            )
+        )
+    }
+
     var isEditing by remember { mutableStateOf(false) }
     var editableBabyInfo by remember { mutableStateOf(babyInfo) }
 
@@ -274,7 +289,7 @@ fun BabyInformationDisplay(babyInfo: BabyInfo) {
         calendar.get(Calendar.DAY_OF_MONTH)
     )
 
-    val yas = calculateBabyAge(if (isEditing) editableBabyInfo.birthDate else babyInfo.birthDate)
+    val yas = calculateBabyAge(babyInfo.birthDate)
 
     Column(
         modifier = Modifier
@@ -292,8 +307,9 @@ fun BabyInformationDisplay(babyInfo: BabyInfo) {
             )
             if (isEditing) {
                 IconButton(onClick = {
+                    // Değişiklikleri kaydet
+                    babyInfo = editableBabyInfo.copy()
                     isEditing = false
-                    // Save changes here if needed
                 }) {
                     Icon(
                         imageVector = Icons.Default.Check,
@@ -328,14 +344,18 @@ fun BabyInformationDisplay(babyInfo: BabyInfo) {
                         )
                     } else {
                         Text(
-                            text = babyInfo.name,
+                            text = if (babyInfo.name.isNotEmpty()) babyInfo.name else "Bebek Adı",
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.weight(1f)
                         )
                     }
                     IconButton(onClick = {
                         if (isEditing) {
-                            editableBabyInfo = babyInfo // Reset changes
+                            // Değişiklikleri iptal et
+                            editableBabyInfo = babyInfo.copy()
+                        } else {
+                            // Düzenleme moduna geç
+                            editableBabyInfo = babyInfo.copy()
                         }
                         isEditing = !isEditing
                     }) {
@@ -388,8 +408,8 @@ fun BabyInformationDisplay(babyInfo: BabyInfo) {
                         }
                     } else {
                         InfoItem(label = "Yaş", value = yas)
-                        InfoItem(label = "Doğum Tarihi", value = babyInfo.birthDate)
-                        InfoItem(label = "Cinsiyet", value = babyInfo.gender)
+                        InfoItem(label = "Doğum Tarihi", value = babyInfo.birthDate.ifEmpty { "-" })
+                        InfoItem(label = "Cinsiyet", value = babyInfo.gender.ifEmpty { "-" })
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -419,9 +439,9 @@ fun BabyInformationDisplay(babyInfo: BabyInfo) {
                             modifier = Modifier.weight(1f)
                         )
                     } else {
-                        InfoItem(label = "Kilo", value = babyInfo.weight)
-                        InfoItem(label = "Boy", value = babyInfo.height)
-                        InfoItem(label = "Kan Grubu", value = babyInfo.bloodType)
+                        InfoItem(label = "Kilo", value = babyInfo.weight.ifEmpty { "-" })
+                        InfoItem(label = "Boy", value = babyInfo.height.ifEmpty { "-" })
+                        InfoItem(label = "Kan Grubu", value = babyInfo.bloodType.ifEmpty { "-" })
                     }
                 }
             }
@@ -770,7 +790,7 @@ fun HelpMenu(
         )
     }
 }
-
+/*
 @Preview(showBackground = true)
 @Composable
 fun ProfileScreenPreview() {
@@ -782,4 +802,4 @@ fun ProfileScreenPreview() {
         onNavigateToChatbot = {},
         authViewModel = AuthViewModel()
     )
-}
+}*/
