@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
+    tableName = "development_milestones",
     indices = [Index(value = ["babyId"])],
     foreignKeys = [
         ForeignKey(

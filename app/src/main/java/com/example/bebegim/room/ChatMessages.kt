@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
+    tableName = "chat_messages",
     indices = [
         Index(value = ["sessionId"]),
         Index(value = ["createdAt"])

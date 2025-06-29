@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 
 
 @Entity(
+    tableName = "growth_measurements",
     indices = [
         Index(value = ["babyId"]) ,
         Index(value = ["measurementDate"])
