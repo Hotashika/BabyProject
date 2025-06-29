@@ -39,6 +39,7 @@ android {
             "-Xcontext-receivers"
         )
     }
+
     buildFeatures {
         compose = true
     }
@@ -87,6 +88,8 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:2.3.5")
     implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.5")
     implementation(libs.ktor.client.okhttp)
+
+    implementation(libs.hikaricp)
 
     val room_version = "2.7.2"
 

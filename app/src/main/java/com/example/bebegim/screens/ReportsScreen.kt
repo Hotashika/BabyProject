@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.bebegim.data.GetThermalData
 import com.example.bebegim.data.ListData
@@ -228,7 +229,7 @@ fun WeeklyReportContent() {
                         21.7f
                     ),
                     labels = listOf("Pzt", "Sal", "Çar", "Per", "Cum", "Cts", "Paz"),
-                    modifier = Modifier
+                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp),
                     lineColor = Color(0xFF4CAF50),
@@ -424,4 +425,31 @@ fun CheckboxItem(
             style = MaterialTheme.typography.bodyMedium
         )
     }
+}
+
+@Preview
+@Composable
+fun ReportsScreenPreview() {
+    ReportsScreen(
+        onNavigateBack = {},
+        onNavigateToProfile = {},
+        onNavigateToCalendarAndNotes = {},
+        onNavigateToThermalCamera = {},
+        onNavigateToChatbot = {}
+    )
+}
+@Preview(showBackground = true)
+@Composable
+fun DailyReportContentPreview() {
+    DailyReportContent()
+}
+@Preview(showBackground = true)
+@Composable
+fun WeeklyReportContentPreview() {
+    WeeklyReportContent()
+}
+@Preview(showBackground = true)
+@Composable
+fun MonthlyReportContentPreview() {
+    MonthlyReportContent()
 }
