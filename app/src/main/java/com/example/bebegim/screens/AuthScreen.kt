@@ -2,11 +2,8 @@ package com.example.bebegim.screens
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,8 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,11 +33,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.bebegim.auth.AuthViewModel
-import com.example.bebegim.ui.theme.Poppins
 import com.example.bebegim.R
+import com.example.bebegim.auth.AuthViewModel
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
+import com.example.bebegim.ui.theme.Poppins
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -55,10 +50,10 @@ fun AuthScreen(
 ) {
     val isDark = isSystemInDarkTheme()
 
-    val context = LocalContext.current
+    LocalContext.current
     val authViewModel: AuthViewModel = viewModel()
-    val isLoadingLogin = authViewModel.isLoadingLogin
-    val errorMessage = authViewModel.errorMessage
+    authViewModel.isLoadingLogin
+    authViewModel.errorMessage
 
     // Animasyon değişkenleri
     val logoAlpha = remember { Animatable(0f) }
