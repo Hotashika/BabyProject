@@ -8,7 +8,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.bebegim.auth.AuthViewModel
 import com.example.bebegim.screens.AdminScreen
@@ -76,7 +75,7 @@ fun AppNavigation() {
         }
 
         composable(Screen.Signup.route) {
-            val authViewModel: AuthViewModel = viewModel()
+            viewModel()
             SignupScreen(
                 onSignupSuccess = { fullName, email, password ->
                     signupFullName = fullName

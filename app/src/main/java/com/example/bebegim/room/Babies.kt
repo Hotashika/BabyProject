@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
+    tableName = "babies",
     indices = [Index(value = ["userId"])],
     foreignKeys = [
         ForeignKey(
@@ -16,6 +17,7 @@ import androidx.room.PrimaryKey
         )
     ]
 )
+
 data class Babies(
     @PrimaryKey
     val babyId: String, // UUID
