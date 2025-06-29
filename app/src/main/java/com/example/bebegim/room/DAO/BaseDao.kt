@@ -1,4 +1,4 @@
-package com.example.bebegim.room
+package com.example.bebegim.room.DAO
 
 import androidx.room.Dao
 import androidx.room.Delete

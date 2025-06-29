@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
+    tableName = "sleep_records",
     indices = [
         Index(value = ["babyId"]),
         Index(value = ["sleepStart"])

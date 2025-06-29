@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
+    tableName = "temperature_readings",
     indices = [
         Index(value = ["babyId"]),
         Index(value = ["measuredAt"])
