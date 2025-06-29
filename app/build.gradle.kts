@@ -35,9 +35,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
-        freeCompilerArgs += listOf(
-            "-Xcontext-receivers"
-        )
     }
     buildFeatures {
         compose = true

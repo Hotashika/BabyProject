@@ -3,7 +3,7 @@ package com.example.bebegim.room
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity()
+@Entity(tableName = "document_embeddings")
 data class DocumentEmbeddings(
     @PrimaryKey
     val embeddingId: String,  // UUID
