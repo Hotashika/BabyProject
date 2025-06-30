@@ -1,26 +1,50 @@
 package com.example.bebegim.screens
 
-import android.annotation.SuppressLint
+
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -31,19 +55,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
+import com.example.bebegim.room.AppDatabase
+import com.example.bebegim.room.Babies
+import com.example.bebegim.room.Users
 import com.example.bebegim.ui.components.LoadingButton
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
 import com.example.bebegim.ui.theme.Poppins
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 @Composable
 fun RequestBabyInfo(
@@ -67,6 +93,12 @@ fun RequestBabyInfo(
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val isLoadingRegister = authViewModel.isLoadingRegister
+
+    val db = remember {
+        AppDatabase.getInstance(context)
+    }
+    val usersDao = db.UsersDao()
+    val babiesDao = db.BabiesDao()
 
     val isDark = isSystemInDarkTheme()
     Column (
@@ -165,16 +197,35 @@ fun RequestBabyInfo(
                 text = "Kaydı Tamamla",
                 isLoading = isLoadingRegister,
                 onClick = {
-                    if (babyFullName.isNotEmpty() /* && other checks */) {
+                    if (babyFullName.isNotEmpty() &&  babyGender.isNotEmpty() && babyBirthDate.isNotEmpty()) {
                         authViewModel.signUpNewUser(
                             email = signupEmail,
                             password = signupPassword,
+                            fullName = signupFullName,
                             onSuccess = {
                                 onSignupSuccess(signupFullName, signupEmail, signupPassword)
                                 onBabyInfoSubmitted(true)
+                                coroutineScope.launch {
+                                    val user = usersDao.getUserByEmail(signupEmail)
+                                    if (user != null) {
+                                        val babies = Babies(
+                                            babyId = UUID.randomUUID().toString(),
+                                            userId = user.userId,
+                                            name = babyFullName,
+                                            birthDate = babyBirthDate,
+                                            gender = babyGender,
+                                            currentWeight = babyWeight.toDoubleOrNull(),
+                                            currentHeight = babyHeight.toDoubleOrNull(),
+                                            bloodType = babyBloodType,
+                                            createdAt = java.time.Instant.now().toString(),
+                                            updatedAt = null,
+                                        )
+                                        babiesDao.insert(babies)
+                                    }
+                                }
                             },
-                            onError = {
-                                authViewModel.errorMessage = "Kayıt başarısız…"
+                            onError = { error ->
+                                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
                             }
                         )
                     } else {

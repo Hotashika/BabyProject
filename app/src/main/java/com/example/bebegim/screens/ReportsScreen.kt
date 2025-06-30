@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bebegim.data.GetThermalData
@@ -331,7 +332,7 @@ fun WeeklyReportContent() {
                 LineChart(
                     data = weeklyTemps,
                     labels = listOf("Pzt", "Sal", "Çar", "Per", "Cum", "Cts", "Paz"),
-                    modifier = Modifier
+                     modifier = Modifier
                         .fillMaxWidth()
                         .height(220.dp),
                     lineColor = Color(0xFF4CAF50),
@@ -636,4 +637,31 @@ fun CheckboxItem(
             style = MaterialTheme.typography.bodyMedium
         )
     }
+}
+
+@Preview
+@Composable
+fun ReportsScreenPreview() {
+    ReportsScreen(
+        onNavigateBack = {},
+        onNavigateToProfile = {},
+        onNavigateToCalendarAndNotes = {},
+        onNavigateToThermalCamera = {},
+        onNavigateToChatbot = {}
+    )
+}
+@Preview(showBackground = true)
+@Composable
+fun DailyReportContentPreview() {
+    DailyReportContent()
+}
+@Preview(showBackground = true)
+@Composable
+fun WeeklyReportContentPreview() {
+    WeeklyReportContent()
+}
+@Preview(showBackground = true)
+@Composable
+fun MonthlyReportContentPreview() {
+    MonthlyReportContent()
 }

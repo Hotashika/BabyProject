@@ -1,6 +1,7 @@
 package com.example.bebegim.screens
 
 import android.app.DatePickerDialog
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,18 +34,23 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
-import com.example.bebegim.ui.components.BottomNavBar
+import com.example.bebegim.auth.AuthViewModelFactory
+import com.example.bebegim.room.AppDatabase
 import com.example.bebegim.ui.components.SettingsItem
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
 import com.example.bebegim.ui.theme.Poppins
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import java.util.*
+import android.graphics.BitmapFactory
+import android.util.Base64
 
-// BabyInfo data class to store baby information
+
+
 data class BabyInfo(
     val name: String = "",
     val birthDate: String = "",
@@ -53,7 +59,6 @@ data class BabyInfo(
     val height: String = "",
     val bloodType: String = ""
 )
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -62,9 +67,8 @@ fun ProfileScreen(
     onNavigateToReports: () -> Unit,
     onNavigateToCalendarAndNotes: () -> Unit,
     onNavigateToChatbot: () -> Unit,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel // <-- add this parameter
 ) {
-
     val isDark = isSystemInDarkTheme()
     val scrollState = rememberScrollState()
 
@@ -112,13 +116,21 @@ fun ProfileScreen(
                 onLogout = onLogout,
                 onNavigateToChatbot = onNavigateToChatbot
             )
-            // Bottom padding to ensure content is not hidden behind bottom navigation
+
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
+
 @Composable
 fun ProfileHeader() {
+
+    val context = LocalContext.current
+    val db = remember {
+        AppDatabase.getInstance(context)
+    }
+    val usersDao = db.UsersDao()
+
     var showPhotoDialog by remember { mutableStateOf(false) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
@@ -176,13 +188,17 @@ fun ProfileHeader() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        val users = usersDao.getAllUsers().collectAsState(initial = emptyList())
+        val fullName = users.value.firstOrNull()?.fullName ?: "-"
+        val email = users.value.firstOrNull()?.email ?: "-"
+
         Text(
-            text = "Ayşe Yılmaz",
+            text = fullName,
             style = MaterialTheme.typography.headlineMedium
         )
 
         Text(
-            text = "ayse@example.com",
+            text = email,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -243,15 +259,17 @@ fun ProfileHeader() {
 
 fun calculateBabyAge(birthDateString: String): String {
     return try {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault())
         val birthDate = LocalDate.parse(birthDateString, formatter)
         val today = LocalDate.now()
         val period = Period.between(birthDate, today)
-        "${period.years} yıl, ${period.months} ay, ${period.days} gün"
+        period.years.toString()
     } catch (e: Exception) {
-        "-"
+        "-1"
     }
 }
+
+
 
 @Composable
 fun BabyInformationDisplay(babyInfo: BabyInfo) {
@@ -260,6 +278,11 @@ fun BabyInformationDisplay(babyInfo: BabyInfo) {
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
+
+    val db = remember {
+        AppDatabase.getInstance(context)
+    }
+    val babiesDao = db.BabiesDao()
 
     // Date picker dialog for editing
     val datePickerDialog = DatePickerDialog(
@@ -273,8 +296,6 @@ fun BabyInformationDisplay(babyInfo: BabyInfo) {
         calendar.get(Calendar.MONTH),
         calendar.get(Calendar.DAY_OF_MONTH)
     )
-
-    val yas = calculateBabyAge(if (isEditing) editableBabyInfo.birthDate else babyInfo.birthDate)
 
     Column(
         modifier = Modifier
@@ -321,14 +342,14 @@ fun BabyInformationDisplay(babyInfo: BabyInfo) {
                     Spacer(modifier = Modifier.width(8.dp))
                     if (isEditing) {
                         OutlinedTextField(
-                            value = editableBabyInfo.name,
+                            value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.name ?: "",
                             onValueChange = { editableBabyInfo = editableBabyInfo.copy(name = it) },
                             label = { Text("Bebek Adı") },
                             modifier = Modifier.weight(1f)
                         )
                     } else {
                         Text(
-                            text = babyInfo.name,
+                            text = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.name ?: "",
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.weight(1f)
                         )
@@ -353,7 +374,7 @@ fun BabyInformationDisplay(babyInfo: BabyInfo) {
                     if (isEditing) {
                         Column(modifier = Modifier.weight(1f)) {
                             OutlinedTextField(
-                                value = editableBabyInfo.birthDate,
+                                value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.birthDate ?: "",
                                 onValueChange = { },
                                 label = { Text("Doğum Tarihi") },
                                 modifier = Modifier.fillMaxWidth(),
@@ -373,23 +394,25 @@ fun BabyInformationDisplay(babyInfo: BabyInfo) {
                             Text("Cinsiyet")
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 RadioButton(
-                                    selected = editableBabyInfo.gender == "Erkek",
+                                    selected = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.gender == "Erkek",
                                     onClick = { editableBabyInfo = editableBabyInfo.copy(gender = "Erkek") }
                                 )
                                 Text("Erkek")
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 RadioButton(
-                                    selected = editableBabyInfo.gender == "Kız",
+                                    selected = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.gender == "Kız",
                                     onClick = { editableBabyInfo = editableBabyInfo.copy(gender = "Kız") }
                                 )
                                 Text("Kız")
                             }
                         }
                     } else {
-                        InfoItem(label = "Yaş", value = yas)
-                        InfoItem(label = "Doğum Tarihi", value = babyInfo.birthDate)
-                        InfoItem(label = "Cinsiyet", value = babyInfo.gender)
+                        val age = calculateBabyAge(babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.birthDate ?: "")
+                        val selected = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.gender ?: ""
+                        InfoItem(label = "Yaş", value = age)
+                        InfoItem(label = "Doğum Tarihi", value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.birthDate ?: "",)
+                        InfoItem(label = "Cinsiyet", value = selected)
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -399,29 +422,29 @@ fun BabyInformationDisplay(babyInfo: BabyInfo) {
                 ) {
                     if (isEditing) {
                         OutlinedTextField(
-                            value = editableBabyInfo.weight,
+                            value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.currentWeight?.toString() ?: "",
                             onValueChange = { editableBabyInfo = editableBabyInfo.copy(weight = it) },
                             label = { Text("Kilo") },
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedTextField(
-                            value = editableBabyInfo.height,
+                            value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.currentHeight?.toString() ?: "",
                             onValueChange = { editableBabyInfo = editableBabyInfo.copy(height = it) },
                             label = { Text("Boy") },
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedTextField(
-                            value = editableBabyInfo.bloodType,
+                            value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.bloodType ?: "",
                             onValueChange = { editableBabyInfo = editableBabyInfo.copy(bloodType = it) },
                             label = { Text("Kan Grubu") },
                             modifier = Modifier.weight(1f)
                         )
                     } else {
-                        InfoItem(label = "Kilo", value = babyInfo.weight)
-                        InfoItem(label = "Boy", value = babyInfo.height)
-                        InfoItem(label = "Kan Grubu", value = babyInfo.bloodType)
+                        InfoItem(label = "Kilo", value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.currentWeight?.toString() ?: "",)
+                        InfoItem(label = "Boy", value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.currentHeight?.toString() ?: "",)
+                        InfoItem(label = "Kan Grubu", value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.bloodType ?: "",)
                     }
                 }
             }
@@ -769,17 +792,4 @@ fun HelpMenu(
             }
         )
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ProfileScreenPreview() {
-    ProfileScreen(
-        onNavigateBack = {},
-        onLogout = {},
-        onNavigateToReports = {},
-        onNavigateToCalendarAndNotes = {},
-        onNavigateToChatbot = {},
-        authViewModel = AuthViewModel()
-    )
 }

@@ -3,7 +3,19 @@ package com.example.bebegim.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -11,7 +23,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,16 +52,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.bebegim.R
 import com.example.bebegim.data.GetThermalData
+import com.example.bebegim.data.GetVideo
 import com.example.bebegim.model.VitalData
 import com.example.bebegim.model.VitalType
-import kotlinx.coroutines.delay
-import com.example.bebegim.R
-import com.example.bebegim.data.GetVideo
 import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
 import com.example.bebegim.ui.theme.Poppins
+import kotlinx.coroutines.delay
 
 fun getTemperatureStatus(temp: Double?): String {
     return when {
@@ -72,7 +83,7 @@ fun HomeScreen(
     onNavigateToThermalCamera: () -> Unit,
     onNavigateToAdmin: () -> Unit
 ) {
-    val isAdmin = remember { mutableStateOf(true) }
+    remember { mutableStateOf(true) }
     var meanTemp by remember { mutableStateOf<Double?>(null) }
     val getThermalData = remember { GetThermalData() }
 
@@ -101,7 +112,7 @@ fun HomeScreen(
                 true
             ),
             VitalData(VitalType.SLEEP, "12 saat", "Yeterli", true),
-            VitalData(VitalType.HUMIDITY, "45%", "Yüksek", true),
+            VitalData(VitalType.HUMIDITY, "45%", "İdeal", true),
             VitalData(VitalType.ROOM_TEMPERATURE, "22.0°C", "Optimal", true),
             VitalData(VitalType.CO2, "29 AQI", "İyi", true)
         )
