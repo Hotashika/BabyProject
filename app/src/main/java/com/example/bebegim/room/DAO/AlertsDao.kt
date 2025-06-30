@@ -1,7 +1,9 @@
 package com.example.bebegim.room.DAO
 
 import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.example.bebegim.room.Alerts
 
 
@@ -13,5 +15,4 @@ interface AlertsDao : BaseDao<Alerts> {
 
     @Query("SELECT * FROM alerts WHERE alert_id = :id")
     fun getAlertById(id: String): kotlinx.coroutines.flow.Flow<Alerts?>
-
 }

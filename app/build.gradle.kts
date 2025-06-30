@@ -40,7 +40,6 @@ android {
         compose = true
     }
 }
-
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -60,24 +59,18 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // Supabase
-    implementation(libs.supabase.kt)
-    implementation(libs.supabase.auth)
-    implementation(libs.storage.kt.android)
-    implementation(libs.coil.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.supabase.postgrest)
-
     // Coil for image loading
+    implementation(libs.coil.compose)
     implementation("io.coil-kt:coil-compose:2.4.0")
+
     // Material Icons Extended
     implementation(libs.androidx.material.icons.extended)
-    // Jaikeerthick's Composable Graphs
+
+    // Charts libraries
     implementation("com.github.jaikeerthick:Composable-Graphs:v1.2.3")
-    // CMPCharts
     implementation("network.chaintech:cmpcharts:2.0.4")
-    // YCharts
     implementation("co.yml:ycharts:2.1.0")
+
     // Ktor Client
     implementation("io.ktor:ktor-client-core:2.3.5")
     implementation("io.ktor:ktor-client-cio:2.3.5")
@@ -85,11 +78,11 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.5")
     implementation(libs.ktor.client.okhttp)
 
-    val room_version = "2.7.2"
-
-    implementation("androidx.room:room-runtime:$room_version")
-    implementation("androidx.room:room-ktx:${room_version}")
-    implementation("androidx.room:room-rxjava3:${room_version}")
-    implementation("androidx.room:room-paging:${room_version}")
-    ksp("androidx.room:room-compiler:$room_version")
+    // Room Database
+    val roomVersion = "2.7.2"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    implementation("androidx.room:room-rxjava3:$roomVersion")
+    implementation("androidx.room:room-paging:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
 }

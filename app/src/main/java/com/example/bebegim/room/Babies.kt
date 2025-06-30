@@ -17,26 +17,21 @@ import androidx.room.PrimaryKey
         )
     ]
 )
-
 data class Babies(
     @PrimaryKey
-    val babyId: String, // UUID
-
-    val userId: String, // foreign key (UUID)
+    val babyId: String,
+    val userId: String,
 
     val name: String,
-    val birthDate: String, // ISO-8601 format: "YYYY-MM-DD"
+    val birthDate: String,
 
-    val gender: String?, // only "male" or "female"
+    val gender: String?,
 
-    val currentWeight: Double?, // numeric(5,2)
-    val currentHeight: Double?, // numeric(5,2)
+    val currentWeight: Double?,
+    val currentHeight: Double?,
 
-    val bloodType: String?, // like "A+", "O-", etc.
+    val bloodType: String?,
 
-    val allergies: String?, // TEXT
-    val medicalNotes: String?, // TEXT
-
-    val createdAt: String?, // timestamp with time zone
-    val updatedAt: String?  // timestamp with time zone
+    val createdAt: String?,
+    val updatedAt: String?
 )

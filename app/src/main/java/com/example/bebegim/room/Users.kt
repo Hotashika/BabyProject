@@ -5,21 +5,24 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "users",
-    indices = [
-        Index(value = ["email"], unique = true),
-        Index(value = ["username"], unique = true)
-    ]
+    tableName = "Users"
 )
 data class Users(
-    @PrimaryKey
-    val userId: String, // UUID olarak saklanır
-
-    val username: String,
+    @PrimaryKey val userId: String,
     val email: String,
-    val fullName: String?,
-    val phone: String?,
-
-    val createdAt: String?, // ISO tarih formatı tavsiye edilir (örnek: "2025-06-28T10:36:12Z")
+    val password: String,
+    val fullName: String,
+    val createdAt: String,
     val updatedAt: String?
+)
+
+data class UsersRegister(
+    val email: String,
+    val password: String,
+    val fullName: String,
+)
+
+data class UsersLogin(
+    val email: String,
+    val password: String,
 )
