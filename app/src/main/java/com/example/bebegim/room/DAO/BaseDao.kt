@@ -8,21 +8,14 @@ import androidx.room.Query
 import androidx.room.Update
 import com.example.bebegim.room.Users
 
-
 @Dao
 interface BaseDao<T> {
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(item: T): Long
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(items: List<T>): List<Long>
+    @Insert
+    suspend fun insert(entity: T)
 
     @Update
-    suspend fun update(item: T)
+    suspend fun update(entity: T)
 
     @Delete
-    suspend fun delete(item: T)
-    @Query("SELECT * FROM users WHERE userId = :userId LIMIT 1")
-    fun getUserById(userId: String): kotlinx.coroutines.flow.Flow<Users?>
+    suspend fun delete(entity: T)
 }
