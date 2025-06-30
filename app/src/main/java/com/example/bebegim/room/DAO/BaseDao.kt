@@ -4,21 +4,18 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import androidx.room.Update
-
+import com.example.bebegim.room.Users
 
 @Dao
 interface BaseDao<T> {
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(item: T): Long
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(items: List<T>): List<Long>
+    @Insert
+    suspend fun insert(entity: T)
 
     @Update
-    suspend fun update(item: T)
+    suspend fun update(entity: T)
 
     @Delete
-    suspend fun delete(item: T)
+    suspend fun delete(entity: T)
 }

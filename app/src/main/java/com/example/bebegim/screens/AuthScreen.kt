@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
+import com.example.bebegim.auth.AuthViewModelFactory
+import com.example.bebegim.room.AppDatabase
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
 import com.example.bebegim.ui.theme.Poppins
@@ -50,8 +52,13 @@ fun AuthScreen(
 ) {
     val isDark = isSystemInDarkTheme()
 
-    LocalContext.current
-    val authViewModel: AuthViewModel = viewModel()
+    val context = LocalContext.current
+    // Initialize the database and DAO
+    val db = remember {
+        AppDatabase.getInstance(context)
+    }
+    val usersDao = db.UsersDao()
+    val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(usersDao))
     authViewModel.isLoadingLogin
     authViewModel.errorMessage
 
@@ -65,7 +72,12 @@ fun AuthScreen(
     val copyrightAlpha = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        // Logo animasyonu
+
+        if (authViewModel.isLoggedIn()) {
+            onLoginSuccess(authViewModel.isAdmin())
+            return@LaunchedEffect
+        }
+
         launch {
             logoAlpha.animateTo(
                 targetValue = 1f,
@@ -118,12 +130,6 @@ fun AuthScreen(
             targetValue = 1f,
             animationSpec = tween(durationMillis = 400)
         )
-    }
-
-    LaunchedEffect(authViewModel.hasInitialized) {
-        if (authViewModel.hasInitialized) {
-            authViewModel.checkLoginAndRun(onLoginSuccess)
-        }
     }
 
     Column(

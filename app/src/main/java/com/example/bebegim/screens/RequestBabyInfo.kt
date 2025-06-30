@@ -1,5 +1,6 @@
 package com.example.bebegim.screens
 
+
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
@@ -59,12 +60,16 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
+import com.example.bebegim.room.AppDatabase
+import com.example.bebegim.room.Babies
+import com.example.bebegim.room.Users
 import com.example.bebegim.ui.components.LoadingButton
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
 import com.example.bebegim.ui.theme.Poppins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 @Composable
 fun RequestBabyInfo(
@@ -88,6 +93,12 @@ fun RequestBabyInfo(
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val isLoadingRegister = authViewModel.isLoadingRegister
+
+    val db = remember {
+        AppDatabase.getInstance(context)
+    }
+    val usersDao = db.UsersDao()
+    val babiesDao = db.BabiesDao()
 
     val isDark = isSystemInDarkTheme()
     Column (
@@ -186,16 +197,35 @@ fun RequestBabyInfo(
                 text = "Kaydı Tamamla",
                 isLoading = isLoadingRegister,
                 onClick = {
-                    if (babyFullName.isNotEmpty() /* && other checks */) {
+                    if (babyFullName.isNotEmpty() &&  babyGender.isNotEmpty() && babyBirthDate.isNotEmpty()) {
                         authViewModel.signUpNewUser(
                             email = signupEmail,
                             password = signupPassword,
+                            fullName = signupFullName,
                             onSuccess = {
                                 onSignupSuccess(signupFullName, signupEmail, signupPassword)
                                 onBabyInfoSubmitted(true)
+                                coroutineScope.launch {
+                                    val user = usersDao.getUserByEmail(signupEmail)
+                                    if (user != null) {
+                                        val babies = Babies(
+                                            babyId = UUID.randomUUID().toString(),
+                                            userId = user.userId,
+                                            name = babyFullName,
+                                            birthDate = babyBirthDate,
+                                            gender = babyGender,
+                                            currentWeight = babyWeight.toDoubleOrNull(),
+                                            currentHeight = babyHeight.toDoubleOrNull(),
+                                            bloodType = babyBloodType,
+                                            createdAt = java.time.Instant.now().toString(),
+                                            updatedAt = null,
+                                        )
+                                        babiesDao.insert(babies)
+                                    }
+                                }
                             },
-                            onError = {
-                                authViewModel.errorMessage = "Kayıt başarısız…"
+                            onError = { error ->
+                                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
                             }
                         )
                     } else {
