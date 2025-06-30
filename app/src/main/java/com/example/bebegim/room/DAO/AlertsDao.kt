@@ -9,9 +9,9 @@ import com.example.bebegim.room.Alerts
 interface AlertsDao : BaseDao<Alerts> {
 
     @Query("SELECT * FROM alerts")
-    suspend fun getAllAlerts(): List<Alerts>
+    fun getAllAlerts(): kotlinx.coroutines.flow.Flow<List<Alerts>>
 
     @Query("SELECT * FROM alerts WHERE alert_id = :id")
-    suspend fun getAlertById(id: String): Alerts?
+    fun getAlertById(id: String): kotlinx.coroutines.flow.Flow<Alerts?>
 
 }

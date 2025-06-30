@@ -4,7 +4,9 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import androidx.room.Update
+import com.example.bebegim.room.Users
 
 
 @Dao
@@ -21,4 +23,6 @@ interface BaseDao<T> {
 
     @Delete
     suspend fun delete(item: T)
+    @Query("SELECT * FROM users WHERE userId = :userId LIMIT 1")
+    fun getUserById(userId: String): kotlinx.coroutines.flow.Flow<Users?>
 }
