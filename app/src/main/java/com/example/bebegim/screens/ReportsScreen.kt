@@ -45,7 +45,6 @@ import kotlinx.coroutines.delay
 @Composable
 fun ReportsScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToProfile: () -> Unit,
     onNavigateToCalendarAndNotes: () -> Unit,
     onNavigateToThermalCamera: () -> Unit,
     onNavigateToChatbot: () -> Unit
@@ -433,7 +432,6 @@ fun CheckboxItem(
 fun ReportsScreenPreview() {
     ReportsScreen(
         onNavigateBack = {},
-        onNavigateToProfile = {},
         onNavigateToCalendarAndNotes = {},
         onNavigateToThermalCamera = {},
         onNavigateToChatbot = {}

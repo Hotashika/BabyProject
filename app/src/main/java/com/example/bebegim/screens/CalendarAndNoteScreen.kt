@@ -61,7 +61,6 @@ fun CalendarAndNoteScreen(
     onNavigateBack: () -> Unit,
     onNavigateToChatbot: () -> Unit,
     onNavigateToReports: () -> Unit,
-    onNavigateToProfile: () -> Unit,
     onNavigateToThermalCamera: () -> Unit,
 ) {
     val isDark = isSystemInDarkTheme()
@@ -418,7 +417,6 @@ fun CalendarAndNoteScreenPreview() {
         onNavigateBack = {},
         onNavigateToChatbot = {},
         onNavigateToReports = {},
-        onNavigateToProfile = {},
         onNavigateToThermalCamera = {}
     )
 }

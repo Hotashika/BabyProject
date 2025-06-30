@@ -70,7 +70,6 @@ fun ChatbotScreen(
     onNavigateToChatbot: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToReports: () -> Unit,
-    onNavigateToProfile: () -> Unit,
     onNavigateToThermalCamera: () -> Unit,
     onNavigateToCalendarAndNotes: () -> Unit
 ) {
@@ -346,7 +345,6 @@ fun ChatbotScreenPreview() {
         onNavigateToChatbot = {},
         onNavigateToHome = {},
         onNavigateToReports = {},
-        onNavigateToProfile = {},
         onNavigateToThermalCamera = {},
         onNavigateToCalendarAndNotes = {}
     )

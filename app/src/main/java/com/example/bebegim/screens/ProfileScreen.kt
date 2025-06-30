@@ -59,6 +59,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
@@ -89,8 +90,6 @@ data class BabyInfo(
 fun ProfileScreen(
     onNavigateBack: () -> Unit,
     onLogout: () -> Unit,
-    onNavigateToReports: () -> Unit,
-    onNavigateToCalendarAndNotes: () -> Unit,
     onNavigateToChatbot: () -> Unit,
     authViewModel: AuthViewModel
 ) {
@@ -820,16 +819,14 @@ fun HelpMenu(
         )
     }
 }
-/*
-@Preview(showBackground = true)
+
+@Preview
 @Composable
 fun ProfileScreenPreview() {
     ProfileScreen(
         onNavigateBack = {},
         onLogout = {},
-        onNavigateToReports = {},
-        onNavigateToCalendarAndNotes = {},
         onNavigateToChatbot = {},
         authViewModel = AuthViewModel()
     )
-}*/
+}

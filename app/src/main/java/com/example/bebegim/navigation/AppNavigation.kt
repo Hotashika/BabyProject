@@ -75,7 +75,6 @@ fun AppNavigation() {
         }
 
         composable(Screen.Signup.route) {
-            viewModel()
             SignupScreen(
                 onSignupSuccess = { fullName, email, password ->
                     signupFullName = fullName
@@ -153,11 +152,6 @@ fun AppNavigation() {
         composable(Screen.Chatbot.route) {
             ChatbotScreen(
                 onNavigateBack = { navController.navigate(Screen.Home.route) },
-                onNavigateToProfile = {
-                    navController.navigate(Screen.Profile.route) {
-                        launchSingleTop = true
-                    }
-                },
                 onNavigateToReports = {
                     navController.navigate(Screen.Reports.route) {
                         launchSingleTop = true
@@ -189,11 +183,6 @@ fun AppNavigation() {
         composable(Screen.Reports.route) {
             ReportsScreen(
                 onNavigateBack = { navController.navigate(Screen.Home.route) },
-                onNavigateToProfile = {
-                    navController.navigate(Screen.Profile.route) {
-                        launchSingleTop = true
-                    }
-                },
                 onNavigateToCalendarAndNotes = {
                     navController.navigate(Screen.CalendarAndNotes.route) {
                         launchSingleTop = true
@@ -215,11 +204,6 @@ fun AppNavigation() {
         composable(Screen.CalendarAndNotes.route) {
             CalendarAndNoteScreen(
                 onNavigateBack = { navController.navigate(Screen.Home.route) },
-                onNavigateToProfile = {
-                    navController.navigate(Screen.Profile.route) {
-                        launchSingleTop = true
-                    }
-                },
                 onNavigateToChatbot = {
                     navController.navigate(Screen.Chatbot.route) {
                         launchSingleTop = true
