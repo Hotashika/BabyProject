@@ -207,7 +207,13 @@ fun AppNavigation() {
                     navController.navigate(Screen.ThermalCamera.route) {
                         launchSingleTop = true
                     }
+                },
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route) {
+                        launchSingleTop = true
+                    }
                 }
+
             )
         }
 
