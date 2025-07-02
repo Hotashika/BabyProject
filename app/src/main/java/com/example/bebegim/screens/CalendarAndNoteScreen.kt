@@ -201,7 +201,7 @@ fun CalendarAndNoteScreen(
                                 )
                             }
 
-                            // Edit/Save button
+                            // Düzenle Butonu
                             if (isEditing) {
                                 Row {
                                     IconButton(

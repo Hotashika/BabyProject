@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.example.bebegim"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.bebegim"
@@ -84,5 +84,6 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
     implementation("androidx.room:room-rxjava3:$roomVersion")
     implementation("androidx.room:room-paging:$roomVersion")
+    implementation("androidx.room:room-guava:${roomVersion}")
     ksp("androidx.room:room-compiler:$roomVersion")
 }

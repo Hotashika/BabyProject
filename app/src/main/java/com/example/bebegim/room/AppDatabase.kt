@@ -14,10 +14,11 @@ import com.example.bebegim.room.DAO.FeedingRecordsDao
 import com.example.bebegim.room.DAO.GrowthMeasurementDao
 import com.example.bebegim.room.DAO.MedicalHistoryDao
 import com.example.bebegim.room.DAO.SleepRecordDao
-import com.example.bebegim.room.DAO.SystemLogsDao
+import com.example.bebegim.roomEnhance.SystemLogs
 import com.example.bebegim.room.DAO.TemperatureReadingDao
 import com.example.bebegim.room.DAO.UsersDao
 import com.example.bebegim.room.DAO.VaccinationsDao
+
 
 @Database(
     entities = [

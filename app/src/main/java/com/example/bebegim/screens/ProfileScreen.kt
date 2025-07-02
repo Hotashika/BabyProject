@@ -44,6 +44,7 @@ import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.text.get
 
 data class BabyInfo(
     val name: String = "",
@@ -315,12 +316,14 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
     }
     val babiesDao = db.BabiesDao()
 
+    val scope = rememberCoroutineScope()
+
     // Date picker dialog for editing
     val datePickerDialog = DatePickerDialog(
         context,
         { _, year, month, dayOfMonth ->
             editableBabyInfo = editableBabyInfo.copy(
-                birthDate = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
+                birthDate = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year)
             )
         },
         calendar.get(Calendar.YEAR),
@@ -345,7 +348,12 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
             if (isEditing) {
                 IconButton(onClick = {
                     isEditing = false
-                    // Save changes here if needed
+                    // Save changes if needed
+                    scope.launch {
+                        if (babyId != null) {
+                            babiesDao.updateBabyById(babyId, editableBabyInfo.name, editableBabyInfo.birthDate)
+                        }
+                    }
                 }) {
                     Icon(
                         imageVector = Icons.Default.Check,
@@ -373,14 +381,14 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
                     Spacer(modifier = Modifier.width(8.dp))
                     if (isEditing) {
                         OutlinedTextField(
-                            value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.name ?: "",
+                            value = editableBabyInfo.name,
                             onValueChange = { editableBabyInfo = editableBabyInfo.copy(name = it) },
                             label = { Text("Bebek Adı") },
                             modifier = Modifier.weight(1f)
                         )
                     } else {
                         Text(
-                            text = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.name ?: "",
+                            text = babyInfo.name,
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.weight(1f)
                         )
@@ -405,7 +413,7 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
                     if (isEditing) {
                         Column(modifier = Modifier.weight(1f)) {
                             OutlinedTextField(
-                                value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.birthDate ?: "",
+                                value = editableBabyInfo.birthDate,
                                 onValueChange = { },
                                 label = { Text("Doğum Tarihi") },
                                 modifier = Modifier.fillMaxWidth(),
@@ -425,25 +433,24 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
                             Text("Cinsiyet")
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 RadioButton(
-                                    selected = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.gender == "Erkek",
+                                    selected = editableBabyInfo.gender == "Erkek",
                                     onClick = { editableBabyInfo = editableBabyInfo.copy(gender = "Erkek") }
                                 )
                                 Text("Erkek")
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 RadioButton(
-                                    selected = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.gender == "Kız",
+                                    selected = editableBabyInfo.gender == "Kız",
                                     onClick = { editableBabyInfo = editableBabyInfo.copy(gender = "Kız") }
                                 )
                                 Text("Kız")
                             }
                         }
                     } else {
-                        val age = calculateBabyAge(babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.birthDate ?: "")
-                        val selected = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.gender ?: ""
+                        val age = calculateBabyAge(babyInfo.birthDate)
                         InfoItem(label = "Yaş", value = age)
-                        InfoItem(label = "Doğum Tarihi", value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.birthDate ?: "",)
-                        InfoItem(label = "Cinsiyet", value = selected)
+                        InfoItem(label = "Doğum Tarihi", value = babyInfo.birthDate)
+                        InfoItem(label = "Cinsiyet", value = babyInfo.gender)
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -453,29 +460,29 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
                 ) {
                     if (isEditing) {
                         OutlinedTextField(
-                            value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.currentWeight?.toString() ?: "",
+                            value = editableBabyInfo.weight,
                             onValueChange = { editableBabyInfo = editableBabyInfo.copy(weight = it) },
                             label = { Text("Kilo") },
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedTextField(
-                            value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.currentHeight?.toString() ?: "",
+                            value = editableBabyInfo.height,
                             onValueChange = { editableBabyInfo = editableBabyInfo.copy(height = it) },
                             label = { Text("Boy") },
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedTextField(
-                            value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.bloodType ?: "",
+                            value = editableBabyInfo.bloodType,
                             onValueChange = { editableBabyInfo = editableBabyInfo.copy(bloodType = it) },
                             label = { Text("Kan Grubu") },
                             modifier = Modifier.weight(1f)
                         )
                     } else {
-                        InfoItem(label = "Kilo", value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.currentWeight?.toString() ?: "",)
-                        InfoItem(label = "Boy", value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.currentHeight?.toString() ?: "",)
-                        InfoItem(label = "Kan Grubu", value = babiesDao.getAllBabies().collectAsState(initial = emptyList()).value.firstOrNull()?.bloodType ?: "",)
+                        InfoItem(label = "Kilo", value = babyInfo.weight)
+                        InfoItem(label = "Boy", value = babyInfo.height)
+                        InfoItem(label = "Kan Grubu", value = babyInfo.bloodType)
                     }
                 }
             }
