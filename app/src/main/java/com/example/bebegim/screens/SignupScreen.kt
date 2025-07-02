@@ -37,11 +37,26 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bebegim.auth.AuthViewModel
+import com.example.bebegim.room.AppDatabase
+import com.example.bebegim.room.DAO.UsersDao
 import com.example.bebegim.ui.components.LoadingButton
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
+import kotlin.compareTo
+
+class AuthViewModelFactory(private val usersDao: UsersDao) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return AuthViewModel(usersDao) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
 
 @Composable
 fun SignupScreen(
@@ -50,7 +65,9 @@ fun SignupScreen(
 ) {
     val isDark = isSystemInDarkTheme()
     val context = LocalContext.current
-    val authViewModel: AuthViewModel = viewModel()
+    val db = remember { AppDatabase.getInstance(context) }
+    val usersDao = db.UsersDao()
+    val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(usersDao))
 
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -86,7 +103,7 @@ fun SignupScreen(
         Spacer(modifier = Modifier.height(60.dp))
 
         SignupTextField(
-            value = fullName,
+            value = fullName.uppercase(),
             onValueChange = { fullName = it },
             label = "Ebeveyn Adı",
             iconRes = com.example.bebegim.R.drawable.user_24,
@@ -119,8 +136,25 @@ fun SignupScreen(
                 if (fullName.isBlank() || email.isBlank() || password.isBlank()) {
                     authViewModel.errorMessage = "Lütfen tüm alanları doldurun."
                     return@LoadingButton
+                } else if (password.length < 6) {
+                    authViewModel.errorMessage = "Şifre en az 6 karakter olmalıdır."
+                    return@LoadingButton
+                } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    authViewModel.errorMessage = "Geçerli bir email adresi girin."
+                    return@LoadingButton
                 }
-                onSignupSuccess(fullName, email, password)
+
+                authViewModel.signUpNewUser(
+                    fullName = fullName,
+                    email = email,
+                    password = password,
+                    onSuccess = {
+                        onSignupSuccess(fullName, email, password)
+                    },
+                    onError = { errorMsg ->
+                        Toast.makeText(context, "Kayıtlı olmayan bir mail adresini giriniz.", Toast.LENGTH_LONG).show()
+                    }
+                )
             },
             modifier = Modifier.fillMaxWidth()
         )

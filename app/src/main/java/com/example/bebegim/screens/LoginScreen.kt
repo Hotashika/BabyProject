@@ -39,21 +39,27 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bebegim.auth.AuthViewModel
+import com.example.bebegim.auth.AuthViewModelFactory
+import com.example.bebegim.room.AppDatabase
+import com.example.bebegim.room.DAO.UsersDao
 import com.example.bebegim.ui.components.LoadingButton
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: (isAdmin: Boolean) -> Unit,
+    onLoginSuccess: (isAdmin: Boolean, email: String) -> Unit,
     onNavigateToSignUp: () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
-
     val context = LocalContext.current
-    val authViewModel: AuthViewModel = viewModel()
+    val db = remember { AppDatabase.getInstance(context) }
+    val usersDao = db.UsersDao()
+    val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(usersDao))
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -87,12 +93,6 @@ fun LoginScreen(
         )
 
         Spacer(modifier = Modifier.height(8.dp))
-
-        /*BabyIllustration(
-            modifier = Modifier
-                .size(200.dp)
-                .padding(16.dp)
-        )*/
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -188,24 +188,15 @@ fun LoginScreen(
                     password = password,
                     onSuccess = {
                         val isAdmin = email.contains("admin")
-                        onLoginSuccess(isAdmin)
+                        onLoginSuccess(isAdmin, email)
                     },
                     onError = {
-                        authViewModel.errorMessage = "Giriş başarısız. Email veya şifrenizi kontrol edin."
+                        authViewModel.errorMessage = it
                     }
                 )
             },
             modifier = Modifier.fillMaxWidth()
         )
-
-        /*TextButton(
-            onClick = {
-
-            },
-            Modifier.wrapContentWidth()
-        ) {
-            Text("Şifrenizi mi Unuttunuz?")
-        }*/
 
         TextButton(
             onClick = {

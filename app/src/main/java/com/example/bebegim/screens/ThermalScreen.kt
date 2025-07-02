@@ -3,14 +3,38 @@ package com.example.bebegim.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -22,10 +46,14 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.bebegim.data.GetThermalData
 import com.example.bebegim.data.ThermalData
+import com.example.bebegim.model.VitalData
+import com.example.bebegim.model.VitalType
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
+import com.example.bebegim.ui.theme.Poppins
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThermalScreen(
     onNavigateBack: () -> Unit,
@@ -42,6 +70,49 @@ fun ThermalScreen(
     var imageUrl by remember { mutableStateOf<String?>(null) }
 
     val thermalDataProvider = remember { GetThermalData() }
+    var headTemp by remember { mutableStateOf<Double?>(null) }
+    var upperBodyTemp by remember { mutableStateOf<Double?>(null) }
+    var lowerBodyTemp by remember { mutableStateOf<Double?>(null) }
+    remember { GetThermalData() }
+
+    /*LaunchedEffect(Unit) {
+        while (true) {
+            val temp = getThermalData.fetchHeadUpLowBodyTemperature()
+            if (temp != null) {
+                headTemp = temp.first
+                upperBodyTemp = temp.second
+                lowerBodyTemp = temp.third
+            } else {
+                headTemp = null
+                upperBodyTemp = null
+                lowerBodyTemp = null
+            }
+            delay(20000)
+        }
+    }*/
+
+    val vitals = remember(headTemp, upperBodyTemp, lowerBodyTemp) {
+        listOf(
+            VitalData(
+                VitalType.BABY_HEAD_TEMPERATURE,
+                headTemp?.let { "%.1f°C".format(it) } ?: "Yükleniyor...",
+                getTemperatureStatus(headTemp),
+                true
+            ),
+            VitalData(
+                VitalType.BABY_UPPERBODY_TEMPERATURE,
+                upperBodyTemp?.let { "%.1f°C".format(it) } ?: "Yükleniyor...",
+                getTemperatureStatus(upperBodyTemp),
+                true
+            ),
+            VitalData(
+                VitalType.BABY_LOWERBODY_TEMPERATURE,
+                lowerBodyTemp?.let { "%.1f°C".format(it) } ?: "Yükleniyor...",
+                getTemperatureStatus(lowerBodyTemp),
+                true
+            )
+        )
+    }
 
     // Veri çekme ve otomatik yenileme
     LaunchedEffect(Unit) {
@@ -65,14 +136,31 @@ fun ThermalScreen(
                 isLoading = false
             }
 
-            // 2 saniyede bir güncelle
-            delay(20000)
+            // 20 saniyede bir güncelle
+            delay(10000)
         }
     }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Termal Kamera",
+                        fontFamily = Poppins,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+        },
         bottomBar = {
             ThermalBottomBar(
                 onNavigateToChatbot = onNavigateToChatbot,
@@ -86,22 +174,16 @@ fun ThermalScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(top = 24.dp, start = 16.dp, end = 16.dp, bottom = 16.dp),
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
+
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Başlık
-            Text(
-                text = "Termal Kamera",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
 
             // Thermal görüntü frame'i
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .width(300.dp)
                     .aspectRatio(9f / 16f)
                     .clip(RoundedCornerShape(12.dp))
                     .border(
@@ -179,96 +261,68 @@ fun ThermalScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Sıcaklık bilgileri
-            thermalData?.let { data ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = "Sıcaklık Bilgileri",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column {
-                                Text(
-                                    text = "Maksimum",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = "${String.format("%.1f", data.maxTemperature)}°C",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Red
-                                )
-                            }
-
-                            Column {
-                                Text(
-                                    text = "Minimum",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = "${String.format("%.1f", data.minTemperature)}°C",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Blue
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column {
-                                Text(
-                                    text = "Ortalama",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = "${String.format("%.1f", data.meanTemperature)}°C",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-
-                            Column {
-                                Text(
-                                    text = "Merkez",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = "${String.format("%.1f", data.centerTemperature)}°C",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
-                    }
-                }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                    .padding(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                ThermalVitals(vitals[0], modifier = Modifier.weight(1f))
+                ThermalVitals(vitals[1], modifier = Modifier.weight(1f))
+                ThermalVitals(vitals[2], modifier = Modifier.weight(1f))
             }
+
+
+        }
+    }
+}
+
+@Composable
+fun ThermalVitals(vital : VitalData, modifier: Modifier = Modifier) {
+    val colorScheme = MaterialTheme.colorScheme
+
+    Card (
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colorScheme.surfaceVariant
+        ),
+        modifier = modifier.height(110.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = vital.type.displayName,
+                style = MaterialTheme.typography.labelSmall,
+                color = colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                fontFamily = Poppins,
+                fontWeight = FontWeight.Medium,
+                fontSize = 10.sp
+            )
+            Text(
+                text = vital.value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = colorScheme.primary,
+                fontFamily = Poppins,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = vital.status,
+                style = MaterialTheme.typography.bodySmall,
+                color = colorScheme.secondary,
+                fontFamily = Poppins,
+                fontWeight = FontWeight.Light,
+                fontSize = 9.sp,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

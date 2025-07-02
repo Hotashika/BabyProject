@@ -3,42 +3,23 @@ package com.example.bebegim.auth
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.util.rangeTo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.jan.supabase.auth.Auth
-import io.github.jan.supabase.auth.SignOutScope
-import io.github.jan.supabase.auth.auth
-import io.github.jan.supabase.auth.providers.builtin.Email
-import io.github.jan.supabase.createSupabaseClient
+import com.example.bebegim.room.DAO.UsersDao
+import com.example.bebegim.room.Users
 import kotlinx.coroutines.launch
+import java.util.UUID
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-class AuthViewModel : ViewModel() {
-
+class AuthViewModel(private val usersDao: UsersDao) : ViewModel() {
     var errorMessage by mutableStateOf<String?>(null)
-
     var isLoadingLogin by mutableStateOf(false)
     var isLoadingRegister by mutableStateOf(false)
     var isLoadingLogout by mutableStateOf(false)
-
-    var hasInitialized by mutableStateOf(false)
+    var hasInitialized by mutableStateOf(true) // Room için true
         private set
-
-    val supabase by lazy {
-        createSupabaseClient(
-            supabaseUrl = "https://enpfpawkbjphocvcgbcn.supabase.co",
-            supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVucGZwYXdrYmpwaG9jdmNnYmNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0MDY5MjksImV4cCI6MjA2NTk4MjkyOX0.0fa1OLzX9vQGajwD8njxK7lhuayRoMr5de1tSXTuAuY"
-        ) {
-            install(Auth)
-        }
-    }
-
-    init {
-        viewModelScope.launch {
-            supabase.auth.awaitInitialization()
-            hasInitialized = true
-        }
-    }
 
     var email by mutableStateOf("")
         private set
@@ -51,6 +32,16 @@ class AuthViewModel : ViewModel() {
         this.password = password
     }
 
+    suspend fun isEmailRegistered(email: String): Boolean {
+        return try {
+            val user = usersDao.getUserByEmail(email)
+            user != null
+        } catch (e: Exception) {
+            errorMessage = "Kullanılmayan bir email giriniz: ${e.localizedMessage}"
+            false
+        }
+    }
+
     fun signInWithEmail(
         email: String,
         password: String,
@@ -60,11 +51,13 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             isLoadingLogin = true
             try {
-                supabase.auth.signInWith(Email) {
-                    this.email = email
-                    this.password = password
+                val user = usersDao.getUserByEmail(email)
+                if (user != null && user.password == password) {
+                    setCredentials(email, password)
+                    onSuccess()
+                } else {
+                    onError("Giriş başarısız. Email veya şifre hatalı.")
                 }
-                onSuccess()
             } catch (e: Exception) {
                 errorMessage = "Login failed: ${e.localizedMessage}"
             } finally {
@@ -74,6 +67,7 @@ class AuthViewModel : ViewModel() {
     }
 
     fun signUpNewUser(
+        fullName: String,
         email: String,
         password: String,
         onSuccess: () -> Unit,
@@ -82,11 +76,21 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             isLoadingRegister = true
             try {
-                supabase.auth.signUpWith(Email) {
-                    this.email = email
-                    this.password = password
+                val existingUser = usersDao.getUserByEmail(email)
+                if (existingUser != null) {
+                    onError("Bu email ile zaten bir kullanıcı var.")
+                } else {
+                    val user = Users(
+                        userId = UUID.randomUUID().toString(),
+                        email = email,
+                        password = password,
+                        fullName = fullName,
+                        createdAt = getCurrentTime(),
+                        updatedAt = null
+                    )
+                    usersDao.insertUser(user)
+                    onSuccess()
                 }
-                onSuccess()
             } catch (e: Exception) {
                 errorMessage = "Sign up failed: ${e.localizedMessage}"
             } finally {
@@ -95,29 +99,25 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    fun isLoggedIn(): Boolean {
+        return email.isNotBlank() && password.isNotBlank()
+    }
+
+    fun isAdmin(): Boolean {
+        return email.contains("admin", ignoreCase = true)
+    }
+
     suspend fun logout() {
         isLoadingLogout = true
         try {
-            supabase.auth.signOut()
-            supabase.auth.signOut(SignOutScope.GLOBAL)
+            setCredentials("", "")
         } finally {
             isLoadingLogout = false
         }
     }
 
-    fun isUserLoggedIn(): Boolean {
-        return supabase.auth.currentUserOrNull() != null
+    private fun getCurrentTime(): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        return sdf.format(Date())
     }
-
-    fun checkLoginAndRun(onLoginSuccess: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            val currentUser = supabase.auth.currentUserOrNull()
-            if (currentUser != null) {
-                val isAdmin = currentUser.email?.contains("admin") ?: false
-                onLoginSuccess(isAdmin)
-            }
-        }
-    }
-
-
 }

@@ -2,11 +2,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
+    id("com.google.devtools.ksp") version "2.0.0-1.0.21"
 }
 
 android {
     namespace = "com.example.bebegim"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.bebegim"
@@ -38,9 +40,7 @@ android {
         compose = true
     }
 }
-
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -59,33 +59,31 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // Supabase
-    implementation(libs.supabase.kt)
-    implementation(libs.supabase.auth)
-    implementation(libs.storage.kt.android)
-    implementation(libs.coil.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.supabase.postgrest)
-
     // Coil for image loading
+    implementation(libs.coil.compose)
     implementation("io.coil-kt:coil-compose:2.4.0")
-    // Ktor
-    implementation(libs.ktor.client.okhttp)
 
     // Material Icons Extended
     implementation(libs.androidx.material.icons.extended)
 
-    // ComposeCharts
-    // implementation("io.github.ehsannarmani:compose-charts:0.1.7")
-
-    // Jaikeerthick's Composable Graphs
+    // Charts libraries
     implementation("com.github.jaikeerthick:Composable-Graphs:v1.2.3")
-
-    // CMPCharts
     implementation("network.chaintech:cmpcharts:2.0.4")
-
-    // CodeAndTheroid's Compose Graphs
-
-    // YCharts
     implementation("co.yml:ycharts:2.1.0")
+
+    // Ktor Client
+    implementation("io.ktor:ktor-client-core:2.3.5")
+    implementation("io.ktor:ktor-client-cio:2.3.5")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.5")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.5")
+    implementation(libs.ktor.client.okhttp)
+
+    // Room Database
+    val roomVersion = "2.7.2"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    implementation("androidx.room:room-rxjava3:$roomVersion")
+    implementation("androidx.room:room-paging:$roomVersion")
+    implementation("androidx.room:room-guava:${roomVersion}")
+    ksp("androidx.room:room-compiler:$roomVersion")
 }

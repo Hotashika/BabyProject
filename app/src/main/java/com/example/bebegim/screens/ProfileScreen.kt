@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
@@ -25,22 +26,26 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
-import com.example.bebegim.ui.components.BottomNavBar
+import com.example.bebegim.room.AppDatabase
 import com.example.bebegim.ui.components.SettingsItem
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
+import com.example.bebegim.ui.theme.Poppins
+import com.example.bebegim.viewModel.ProfileViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.text.get
 
-// BabyInfo data class to store baby information
 data class BabyInfo(
     val name: String = "",
     val birthDate: String = "",
@@ -49,7 +54,6 @@ data class BabyInfo(
     val height: String = "",
     val bloodType: String = ""
 )
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -58,24 +62,63 @@ fun ProfileScreen(
     onNavigateToReports: () -> Unit,
     onNavigateToCalendarAndNotes: () -> Unit,
     onNavigateToChatbot: () -> Unit,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
+    email: String
 ) {
-
     val isDark = isSystemInDarkTheme()
     val scrollState = rememberScrollState()
 
+    val context = LocalContext.current
+    val db = remember { AppDatabase.getInstance(context) }
+    val usersDao = db.UsersDao()
+    val babiesDao = db.BabiesDao()
+
+    // Use ProfileViewModel
+    val profileViewModel: ProfileViewModel = viewModel(factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+            return ProfileViewModel(usersDao) as T
+        }
+    })
+    LaunchedEffect(email) {
+        profileViewModel.loadUserByEmail(email)
+    }
+    val user = profileViewModel.user.value
+
+    val userId = user?.userId
+    val babies by if (userId != null) {
+        babiesDao.getBabiesByUserId(userId).collectAsState(initial = emptyList())
+    } else {
+        remember { mutableStateOf(emptyList<com.example.bebegim.room.Babies>()) }
+    }
+    val baby = babies.firstOrNull()
+
     Scaffold(
         containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
-        bottomBar = {
-            BottomNavBar(
-                currentRoute = "profile",
-                onHomeClick = onNavigateBack,
-                onChatClick = onNavigateToChatbot,
-                onReportsClick = onNavigateToReports,
-                onCalendarAndNotesClick = onNavigateToCalendarAndNotes,
-                onThermalCameraClick = { /* TODO: handle navigation to thermal camera */ }
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Profil",
+                        fontFamily = Poppins,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Geri"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -83,9 +126,21 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            ProfileHeader()
+            ProfileHeader(email = email, fullName = user?.fullName ?: "-", isLoading = user == null)
             Spacer(modifier = Modifier.height(16.dp))
-            BabyInformationDisplay(babyInfo = BabyInfo())
+            BabyInformationDisplay(
+                babyInfo = baby?.let {
+                    BabyInfo(
+                        name = it.name ?: "",
+                        birthDate = it.birthDate ?: "",
+                        gender = it.gender ?: "",
+                        weight = it.currentWeight?.toString() ?: "",
+                        height = it.currentHeight?.toString() ?: "",
+                        bloodType = it.bloodType ?: ""
+                    )
+                } ?: BabyInfo(),
+                babyId = baby?.babyId
+            )
             Spacer(modifier = Modifier.height(16.dp))
             SettingsSection(
                 authViewModel = authViewModel,
@@ -93,13 +148,21 @@ fun ProfileScreen(
                 onLogout = onLogout,
                 onNavigateToChatbot = onNavigateToChatbot
             )
-            // Bottom padding to ensure content is not hidden behind bottom navigation
+
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
+
 @Composable
-fun ProfileHeader() {
+fun ProfileHeader(email: String, fullName: String, isLoading: Boolean = false) {
+    val context = LocalContext.current
+    val db = remember {
+        AppDatabase.getInstance(context)
+    }
+    val usersDao = db.UsersDao()
+
+
     var showPhotoDialog by remember { mutableStateOf(false) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
@@ -157,13 +220,17 @@ fun ProfileHeader() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "Ayşe Yılmaz",
-            style = MaterialTheme.typography.headlineMedium
-        )
+        if (isLoading) {
+            CircularProgressIndicator()
+        } else {
+            Text(
+                text = fullName,
+                style = MaterialTheme.typography.headlineMedium
+            )
+        }
 
         Text(
-            text = "ayse@example.com",
+            text = email,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -224,38 +291,45 @@ fun ProfileHeader() {
 
 fun calculateBabyAge(birthDateString: String): String {
     return try {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault())
         val birthDate = LocalDate.parse(birthDateString, formatter)
         val today = LocalDate.now()
         val period = Period.between(birthDate, today)
-        "${period.years} yıl, ${period.months} ay, ${period.days} gün"
+        period.years.toString()
     } catch (e: Exception) {
-        "-"
+        "-1"
     }
 }
 
+
+
 @Composable
-fun BabyInformationDisplay(babyInfo: BabyInfo) {
+fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
     var isEditing by remember { mutableStateOf(false) }
     var editableBabyInfo by remember { mutableStateOf(babyInfo) }
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
+    val db = remember {
+        AppDatabase.getInstance(context)
+    }
+    val babiesDao = db.BabiesDao()
+
+    val scope = rememberCoroutineScope()
+
     // Date picker dialog for editing
     val datePickerDialog = DatePickerDialog(
         context,
         { _, year, month, dayOfMonth ->
             editableBabyInfo = editableBabyInfo.copy(
-                birthDate = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
+                birthDate = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year)
             )
         },
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
         calendar.get(Calendar.DAY_OF_MONTH)
     )
-
-    val yas = calculateBabyAge(if (isEditing) editableBabyInfo.birthDate else babyInfo.birthDate)
 
     Column(
         modifier = Modifier
@@ -274,7 +348,12 @@ fun BabyInformationDisplay(babyInfo: BabyInfo) {
             if (isEditing) {
                 IconButton(onClick = {
                     isEditing = false
-                    // Save changes here if needed
+                    // Save changes if needed
+                    scope.launch {
+                        if (babyId != null) {
+                            babiesDao.updateBabyById(babyId, editableBabyInfo.name, editableBabyInfo.birthDate)
+                        }
+                    }
                 }) {
                     Icon(
                         imageVector = Icons.Default.Check,
@@ -368,7 +447,8 @@ fun BabyInformationDisplay(babyInfo: BabyInfo) {
                             }
                         }
                     } else {
-                        InfoItem(label = "Yaş", value = yas)
+                        val age = calculateBabyAge(babyInfo.birthDate)
+                        InfoItem(label = "Yaş", value = age)
                         InfoItem(label = "Doğum Tarihi", value = babyInfo.birthDate)
                         InfoItem(label = "Cinsiyet", value = babyInfo.gender)
                     }

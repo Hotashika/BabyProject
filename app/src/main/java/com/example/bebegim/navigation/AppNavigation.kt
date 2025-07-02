@@ -8,9 +8,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.bebegim.auth.AuthViewModel
+import com.example.bebegim.auth.AuthViewModelFactory
+import com.example.bebegim.room.AppDatabase
 import com.example.bebegim.screens.AdminScreen
 import com.example.bebegim.screens.AuthScreen
 import com.example.bebegim.screens.CalendarAndNoteScreen
@@ -22,6 +23,7 @@ import com.example.bebegim.screens.ReportsScreen
 import com.example.bebegim.screens.RequestBabyInfo
 import com.example.bebegim.screens.SignupScreen
 import com.example.bebegim.screens.ThermalScreen
+import androidx.compose.ui.platform.LocalContext
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -39,11 +41,16 @@ sealed class Screen(val route: String) {
 
 @Composable
 fun AppNavigation() {
+    var loginEmail by remember { mutableStateOf("") }
     val navController = rememberNavController()
     var signupFullName by remember { mutableStateOf("") }
     var signupEmail by remember { mutableStateOf("") }
     var signupPassword by remember { mutableStateOf("") }
 
+    // Add context and db for ViewModelFactory usage
+    val context = LocalContext.current
+    val db = remember { AppDatabase.getInstance(context) }
+    val usersDao = db.UsersDao()
 
     NavHost(navController = navController, startDestination = Screen.Auth.route) {
         composable(Screen.Auth.route) {
@@ -64,7 +71,8 @@ fun AppNavigation() {
 
         composable(Screen.Login.route) {
             LoginScreen(
-                onLoginSuccess = { isAdmin ->
+                onLoginSuccess = { isAdmin, email ->
+                    loginEmail = email
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Auth.route) { inclusive = true }
                     }
@@ -76,7 +84,6 @@ fun AppNavigation() {
         }
 
         composable(Screen.Signup.route) {
-            val authViewModel: AuthViewModel = viewModel()
             SignupScreen(
                 onSignupSuccess = { fullName, email, password ->
                     signupFullName = fullName
@@ -91,7 +98,10 @@ fun AppNavigation() {
         }
 
         composable(Screen.RequestBabyInfo.route) {
-            val authViewModel: AuthViewModel = viewModel()
+            // Use factory for AuthViewModel
+            val authViewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                factory = AuthViewModelFactory(usersDao)
+            )
             RequestBabyInfo(
                 signupFullName   = signupFullName,
                 signupEmail      = signupEmail,
@@ -133,7 +143,7 @@ fun AppNavigation() {
                     }
                 },
                 onNavigateToProfile = {
-                    navController.navigate(Screen.Profile.route) {
+                    navController.navigate(Screen.Profile.route + "/$loginEmail") {
                         launchSingleTop = true
                     }
                 },
@@ -154,11 +164,6 @@ fun AppNavigation() {
         composable(Screen.Chatbot.route) {
             ChatbotScreen(
                 onNavigateBack = { navController.navigate(Screen.Home.route) },
-                onNavigateToProfile = {
-                    navController.navigate(Screen.Profile.route) {
-                        launchSingleTop = true
-                    }
-                },
                 onNavigateToReports = {
                     navController.navigate(Screen.Reports.route) {
                         launchSingleTop = true
@@ -190,11 +195,6 @@ fun AppNavigation() {
         composable(Screen.Reports.route) {
             ReportsScreen(
                 onNavigateBack = { navController.navigate(Screen.Home.route) },
-                onNavigateToProfile = {
-                    navController.navigate(Screen.Profile.route) {
-                        launchSingleTop = true
-                    }
-                },
                 onNavigateToCalendarAndNotes = {
                     navController.navigate(Screen.CalendarAndNotes.route) {
                         launchSingleTop = true
@@ -209,18 +209,19 @@ fun AppNavigation() {
                     navController.navigate(Screen.ThermalCamera.route) {
                         launchSingleTop = true
                     }
+                },
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route) {
+                        launchSingleTop = true
+                    }
                 }
+
             )
         }
 
         composable(Screen.CalendarAndNotes.route) {
             CalendarAndNoteScreen(
                 onNavigateBack = { navController.navigate(Screen.Home.route) },
-                onNavigateToProfile = {
-                    navController.navigate(Screen.Profile.route) {
-                        launchSingleTop = true
-                    }
-                },
                 onNavigateToChatbot = {
                     navController.navigate(Screen.Chatbot.route) {
                         launchSingleTop = true
@@ -261,8 +262,11 @@ fun AppNavigation() {
         }
 
 
-        composable(Screen.Profile.route) {
-            val authViewModel: AuthViewModel = viewModel()
+        composable(Screen.Profile.route + "/{email}") { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: "-"
+            val authViewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                factory = AuthViewModelFactory(usersDao)
+            )
             ProfileScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onLogout = {
@@ -285,7 +289,8 @@ fun AppNavigation() {
                         launchSingleTop = true
                     }
                 },
-                authViewModel = authViewModel
+                authViewModel = authViewModel,
+                email = email
             )
         }
 
@@ -293,8 +298,4 @@ fun AppNavigation() {
             AdminScreen(onNavigateBack = { navController.popBackStack() })
         }
     }
-}
-
-fun ProfileScreen(onNavigateBack: () -> Unit, onLogout: () -> Unit, onNavigateToReports: () -> Unit, onNavigateToCalendarAndNotes: () -> Unit, onNavigateToChatbot: () -> Unit, authViewModel: AuthViewModel) {
-
 }

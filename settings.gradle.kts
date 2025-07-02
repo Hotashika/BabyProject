@@ -22,4 +22,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "BabyProject"
 include(":app")
- 
+

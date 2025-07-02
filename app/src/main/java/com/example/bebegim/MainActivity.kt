@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.example.bebegim.navigation.AppNavigation
+import com.example.bebegim.room.AppDatabase
 import com.example.bebegim.ui.theme.BabyProject
 
 class MainActivity : ComponentActivity() {
