@@ -41,6 +41,7 @@ sealed class Screen(val route: String) {
 
 @Composable
 fun AppNavigation() {
+    var loginEmail by remember { mutableStateOf("") }
     val navController = rememberNavController()
     var signupFullName by remember { mutableStateOf("") }
     var signupEmail by remember { mutableStateOf("") }
@@ -70,7 +71,8 @@ fun AppNavigation() {
 
         composable(Screen.Login.route) {
             LoginScreen(
-                onLoginSuccess = { isAdmin ->
+                onLoginSuccess = { isAdmin, email ->
+                    loginEmail = email
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Auth.route) { inclusive = true }
                     }
@@ -141,7 +143,7 @@ fun AppNavigation() {
                     }
                 },
                 onNavigateToProfile = {
-                    navController.navigate(Screen.Profile.route) {
+                    navController.navigate(Screen.Profile.route + "/$loginEmail") {
                         launchSingleTop = true
                     }
                 },
@@ -254,8 +256,8 @@ fun AppNavigation() {
         }
 
 
-        composable(Screen.Profile.route) {
-            // Use factory for AuthViewModel
+        composable(Screen.Profile.route + "/{email}") { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: "-"
             val authViewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
                 factory = AuthViewModelFactory(usersDao)
             )
@@ -281,7 +283,8 @@ fun AppNavigation() {
                         launchSingleTop = true
                     }
                 },
-                authViewModel = authViewModel
+                authViewModel = authViewModel,
+                email = email
             )
         }
 

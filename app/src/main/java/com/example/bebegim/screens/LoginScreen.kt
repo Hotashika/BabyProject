@@ -52,7 +52,7 @@ import com.example.bebegim.ui.theme.PastelBlueWhite
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: (isAdmin: Boolean) -> Unit,
+    onLoginSuccess: (isAdmin: Boolean, email: String) -> Unit,
     onNavigateToSignUp: () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
@@ -188,7 +188,7 @@ fun LoginScreen(
                     password = password,
                     onSuccess = {
                         val isAdmin = email.contains("admin")
-                        onLoginSuccess(isAdmin)
+                        onLoginSuccess(isAdmin, email)
                     },
                     onError = {
                         authViewModel.errorMessage = it

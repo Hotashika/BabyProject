@@ -53,11 +53,12 @@ fun AuthScreen(
     val isDark = isSystemInDarkTheme()
 
     val context = LocalContext.current
-    // Initialize the database and DAO
+
     val db = remember {
         AppDatabase.getInstance(context)
     }
     val usersDao = db.UsersDao()
+
     val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(usersDao))
     authViewModel.isLoadingLogin
     authViewModel.errorMessage
