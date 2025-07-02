@@ -9,9 +9,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BabiesDao : BaseDao<Babies> {
-    @Query("SELECT * FROM babies")
+    @Query("SELECT * FROM babies ORDER BY createdAt DESC")
     fun getAllBabies(): Flow<List<Babies>>
-
     @Query("SELECT * FROM Babies WHERE userId = :userId")
     fun getBabiesByUserId(userId: String): Flow<List<Babies>>
     @Query("UPDATE babies SET name = :name, birthDate = :birthDate WHERE babyId = :babyId")
