@@ -2,7 +2,7 @@ package com.example.bebegim.room.DAO
 
 import androidx.room.Dao
 import androidx.room.Query
-import com.example.bebegim.room.SystemLogs
+import com.example.bebegim.roomEnhance.SystemLogs
 import kotlinx.coroutines.flow.Flow
 
 @Dao

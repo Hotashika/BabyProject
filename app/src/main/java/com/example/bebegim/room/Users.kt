@@ -1,7 +1,6 @@
 package com.example.bebegim.room
 
 import androidx.room.Entity
-import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -12,6 +11,7 @@ data class Users(
     val email: String,
     val password: String,
     val fullName: String,
+    val profilePicture: ByteArray? = null,
     val createdAt: String,
     val updatedAt: String?
 )
