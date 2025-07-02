@@ -40,20 +40,13 @@ import com.example.bebegim.ui.theme.PastelBlueWhite
 import com.example.bebegim.ui.theme.Poppins
 import com.example.bebegim.viewModel.ProfileViewModel
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.text.get
 
-data class BabyInfo(
-    val name: String = "",
-    val birthDate: String = "",
-    val gender: String = "",
-    val weight: String = "",
-    val height: String = "",
-    val bloodType: String = ""
-)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -295,13 +288,23 @@ fun calculateBabyAge(birthDateString: String): String {
         val birthDate = LocalDate.parse(birthDateString, formatter)
         val today = LocalDate.now()
         val period = Period.between(birthDate, today)
+
+        if (period.years == 0) return "${period.months} ay ${period.days} gün"
+
         period.years.toString()
     } catch (e: Exception) {
         "-1"
     }
 }
 
-
+data class BabyInfo(
+    val name: String = "",
+    val birthDate: String = "",
+    val gender: String = "",
+    val weight: String = "",
+    val height: String = "",
+    val bloodType: String = ""
+)
 
 @Composable
 fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
@@ -348,10 +351,23 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
             if (isEditing) {
                 IconButton(onClick = {
                     isEditing = false
-                    // Save changes if needed
                     scope.launch {
-                        if (babyId != null) {
-                            babiesDao.updateBabyById(babyId, editableBabyInfo.name, editableBabyInfo.birthDate)
+                        try {
+                            if (babyId != null) {
+                                babiesDao.updateBabyById(
+                                    babyId = babyId,
+                                    name = editableBabyInfo.name,
+                                    birthDate = editableBabyInfo.birthDate,
+                                    gender = editableBabyInfo.gender,
+                                    weight = editableBabyInfo.weight.toDoubleOrNull(),
+                                    height = editableBabyInfo.height.toDoubleOrNull(),
+                                    bloodType = editableBabyInfo.bloodType,
+                                    updatedAt = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+                                )
+                            }
+                        } catch (e: Exception) {
+                            // Handle error
+                            println("Error updating baby info: ${e.localizedMessage}")
                         }
                     }
                 }) {

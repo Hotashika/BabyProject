@@ -124,7 +124,7 @@ fun RequestBabyInfo(
         Spacer(modifier = Modifier.height(50.dp))
 
         BabyFullNameTextField(
-            value = babyFullName,
+            value = babyFullName.uppercase(),
             onValueChange = { babyFullName = it },
             label = "Bebeğinizin Adı",
             placeholder = "Bebeğinizin Adını Giriniz",
