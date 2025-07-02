@@ -86,4 +86,6 @@ dependencies {
     implementation("androidx.room:room-paging:$roomVersion")
     implementation("androidx.room:room-guava:${roomVersion}")
     ksp("androidx.room:room-compiler:$roomVersion")
+
+    implementation("androidx.datastore:datastore-preferences:1.1.6")
 }

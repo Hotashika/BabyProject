@@ -74,6 +74,7 @@ fun AuthScreen(
 
     LaunchedEffect(Unit) {
 
+
         if (authViewModel.isLoggedIn()) {
             onLoginSuccess(authViewModel.isAdmin())
             return@LaunchedEffect

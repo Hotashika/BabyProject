@@ -143,18 +143,7 @@ fun SignupScreen(
                     authViewModel.errorMessage = "Geçerli bir email adresi girin."
                     return@LoadingButton
                 }
-
-                authViewModel.signUpNewUser(
-                    fullName = fullName,
-                    email = email,
-                    password = password,
-                    onSuccess = {
-                        onSignupSuccess(fullName, email, password)
-                    },
-                    onError = { errorMsg ->
-                        Toast.makeText(context, "Kayıtlı olmayan bir mail adresini giriniz.", Toast.LENGTH_LONG).show()
-                    }
-                )
+                onSignupSuccess(fullName, email, password)
             },
             modifier = Modifier.fillMaxWidth()
         )
