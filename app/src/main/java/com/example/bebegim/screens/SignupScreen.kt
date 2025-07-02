@@ -46,6 +46,7 @@ import com.example.bebegim.room.DAO.UsersDao
 import com.example.bebegim.ui.components.LoadingButton
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
+import kotlin.compareTo
 
 class AuthViewModelFactory(private val usersDao: UsersDao) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -102,7 +103,7 @@ fun SignupScreen(
         Spacer(modifier = Modifier.height(60.dp))
 
         SignupTextField(
-            value = fullName,
+            value = fullName.uppercase(),
             onValueChange = { fullName = it },
             label = "Ebeveyn Adı",
             iconRes = com.example.bebegim.R.drawable.user_24,
@@ -135,8 +136,25 @@ fun SignupScreen(
                 if (fullName.isBlank() || email.isBlank() || password.isBlank()) {
                     authViewModel.errorMessage = "Lütfen tüm alanları doldurun."
                     return@LoadingButton
+                } else if (password.length < 6) {
+                    authViewModel.errorMessage = "Şifre en az 6 karakter olmalıdır."
+                    return@LoadingButton
+                } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    authViewModel.errorMessage = "Geçerli bir email adresi girin."
+                    return@LoadingButton
                 }
-                onSignupSuccess(fullName, email, password)
+
+                authViewModel.signUpNewUser(
+                    fullName = fullName,
+                    email = email,
+                    password = password,
+                    onSuccess = {
+                        onSignupSuccess(fullName, email, password)
+                    },
+                    onError = { errorMsg ->
+                        Toast.makeText(context, "Kayıtlı olmayan bir mail adresini giriniz.", Toast.LENGTH_LONG).show()
+                    }
+                )
             },
             modifier = Modifier.fillMaxWidth()
         )
