@@ -1,37 +1,30 @@
 package com.example.bebegim.screens
 
-import android.annotation.SuppressLint
+import android.app.DatePickerDialog
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -42,8 +35,8 @@ import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
 import com.example.bebegim.ui.theme.Poppins
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import java.util.*
 
 @Composable
 fun RequestBabyInfo(
@@ -55,7 +48,7 @@ fun RequestBabyInfo(
     onSignupSuccess: (String, String, String) -> Unit,
     authViewModel: AuthViewModel,
     onLogout: () -> Unit,
-){
+) {
     var babyFullName by remember { mutableStateOf("") }
     var babyGender by remember { mutableStateOf("") }
     var babyBirthDate by remember { mutableStateOf("") }
@@ -68,18 +61,28 @@ fun RequestBabyInfo(
     val context = LocalContext.current
     val isLoadingRegister = authViewModel.isLoadingRegister
 
+    // AuthViewModel'den gelen hata mesajlarını dinleyin
+    LaunchedEffect(authViewModel.errorMessage) {
+        authViewModel.errorMessage?.let { errorMessage ->
+            if (errorMessage.isNotEmpty()) {
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                // Hata mesajını temizle
+                authViewModel.errorMessage = null
+            }
+        }
+    }
+
     val isDark = isSystemInDarkTheme()
-    Column (
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(if (isDark) DarkPastelBlue else PastelBlueWhite)
             .padding(24.dp)
             .padding(top = 24.dp)
-/*            .padding(bottom = 60.dp)*/
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(0.dp, Alignment.CenterVertically),
-    ){
+    ) {
         Text(
             text = "Bebek Bilgileri",
             fontFamily = Poppins,
@@ -104,8 +107,7 @@ fun RequestBabyInfo(
             value = babyGender,
             onValueChange = { babyGender = it },
             label = "Cinsiyet",
-            placeholder = "Cinsiyet Seçiniz",
-/*            iconRes = R.drawable.user_24*/
+            placeholder = "Cinsiyet Seçiniz"
         )
 
         BabyBirthDateTextField(
@@ -113,10 +115,8 @@ fun RequestBabyInfo(
             onValueChange = { babyBirthDate = it },
             label = "Doğum Tarihi",
             placeholder = "GG/AA/YYYY",
-            iconRes = R.drawable.cake_birthday_20,
-            keyboardType = KeyboardType.Number
+            iconRes = R.drawable.cake_birthday_20
         )
-
 
         BabyWeightTextField(
             value = babyWeight,
@@ -150,9 +150,7 @@ fun RequestBabyInfo(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedButton(
-                onClick = {
-                    showDialog = true
-                          },
+                onClick = { showDialog = true },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = MaterialTheme.colorScheme.primary
@@ -165,40 +163,85 @@ fun RequestBabyInfo(
                 text = "Kaydı Tamamla",
                 isLoading = isLoadingRegister,
                 onClick = {
-                    if (babyFullName.isNotEmpty() /* && other checks */) {
+                    // Debug için log ekleyin
+                    println("=== KAYIT TAMAMLA BASILDI ===")
+                    println("Bebek Adı: '$babyFullName'")
+                    println("Cinsiyet: '$babyGender'")
+                    println("Doğum Tarihi: '$babyBirthDate'")
+                    println("Kan Grubu: '$babyBloodType'")
+                    println("Kilo: '$babyWeight'")
+                    println("Boy: '$babyHeight'")
+
+                    // Trim işlemi yaparak boşlukları temizleyin
+                    val trimmedName = babyFullName.trim()
+                    val trimmedGender = babyGender.trim()
+                    val trimmedBirthDate = babyBirthDate.trim()
+                    val trimmedBloodType = babyBloodType.trim()
+                    val trimmedWeight = babyWeight.trim()
+                    val trimmedHeight = babyHeight.trim()
+
+                    if (trimmedName.isNotEmpty() &&
+                        trimmedBirthDate.isNotEmpty() &&
+                        trimmedGender.isNotEmpty() &&
+                        trimmedBloodType.isNotEmpty() &&
+                        trimmedWeight.isNotEmpty() &&
+                        trimmedHeight.isNotEmpty()) {
+
+                        println("Tüm alanlar dolu, kayıt işlemi başlatılıyor...")
+
+                        // Burada bebek bilgilerini de kaydetmeniz gerekebilir
+                        // Önce bebek bilgilerini kaydedin, sonra kullanıcı kaydını yapın
                         authViewModel.signUpNewUser(
                             email = signupEmail,
                             password = signupPassword,
                             onSuccess = {
+                                println("Kullanıcı kaydı başarılı!")
+                                // TODO: Burada bebek bilgilerini de veritabanına kaydedin
+                                // authViewModel.saveBabyInfo(trimmedName, trimmedGender, trimmedBirthDate, trimmedBloodType, trimmedWeight, trimmedHeight)
+
                                 onSignupSuccess(signupFullName, signupEmail, signupPassword)
                                 onBabyInfoSubmitted(true)
+                                Toast.makeText(context, "Kayıt başarıyla tamamlandı!", Toast.LENGTH_SHORT).show()
                             },
-                            onError = {
-                                authViewModel.errorMessage = "Kayıt başarısız…"
+                            onError = { errorMessage ->
+                                println("Kayıt hatası: $errorMessage")
+                                authViewModel.errorMessage = errorMessage ?: "Kayıt başarısız. Lütfen tekrar deneyiniz."
                             }
                         )
                     } else {
-                        Toast.makeText(context, "Lütfen tüm alanları doldurun.", Toast.LENGTH_SHORT).show()
+                        println("Eksik alanlar var!")
+                        val missingFields = mutableListOf<String>()
+                        if (trimmedName.isEmpty()) missingFields.add("Bebek Adı")
+                        if (trimmedGender.isEmpty()) missingFields.add("Cinsiyet")
+                        if (trimmedBirthDate.isEmpty()) missingFields.add("Doğum Tarihi")
+                        if (trimmedBloodType.isEmpty()) missingFields.add("Kan Grubu")
+                        if (trimmedWeight.isEmpty()) missingFields.add("Kilo")
+                        if (trimmedHeight.isEmpty()) missingFields.add("Boy")
+
+                        val missingFieldsText = missingFields.joinToString(", ")
+                        Toast.makeText(context, "Lütfen şu alanları doldurun: $missingFieldsText", Toast.LENGTH_LONG).show()
                     }
                 },
                 modifier = Modifier.weight(1f)
             )
-            if (showDialog) {
-                AlertDialogComponent(
-                    onDismiss = { showDialog = false },
-                    authViewModel = authViewModel,
-                    context = context,
-                    coroutineScope = coroutineScope,
-                    onLogout = onLogout,
-                    onBabyInfoCancelled = onBabyInfoCancelled
-                )
-            }
+        }
+
+        if (showDialog) {
+            AlertDialogComponent(
+                onDismiss = { showDialog = false },
+                authViewModel = authViewModel,
+                context = context,
+                coroutineScope = coroutineScope,
+                onLogout = onLogout,
+                onBabyInfoCancelled = onBabyInfoCancelled
+            )
         }
     }
 }
 
+// Diğer composable fonksiyonları aynı kalacak...
 @Composable
-private fun BabyBirthDateTextField(
+private fun BabyFullNameTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -211,65 +254,6 @@ private fun BabyBirthDateTextField(
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier
-                .padding(bottom = 0.dp)
-                .padding(start = 16.dp),
-        )
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            placeholder = {
-                if (value.isEmpty()) {
-                    Text(placeholder, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-                }
-            },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(iconRes),
-                    contentDescription = "$label icon",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = keyboardType,
-                imeAction = ImeAction.Next
-            ),
-            shape = RoundedCornerShape(16.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                focusedLabelColor = MaterialTheme.colorScheme.primary,
-                cursorColor = MaterialTheme.colorScheme.primary,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedLabelColor = MaterialTheme.colorScheme.onSurface
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .animateContentSize()
-        )
-    }
-}
-
-@Composable
-private fun BabyFullNameTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    placeholder: String,
-    iconRes: Int,
-    keyboardType: KeyboardType
-) {
-    Column (
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    ){
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
@@ -317,14 +301,12 @@ private fun BabyFullNameTextField(
 
 @Composable
 private fun BabyGenderTextField(
-    value: String = "",
-    onValueChange: ((String) -> Unit)? = null,
-    label: String = "Cinsiyet",
-    placeholder: String = "Cinsiyet seçiniz",
-    iconRes: Int = R.drawable.profile_placeholder,
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    placeholder: String
 ) {
     val currentValue = value
-    val onChange = onValueChange ?: {}
 
     Column(
         modifier = Modifier
@@ -347,7 +329,7 @@ private fun BabyGenderTextField(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Button(
-                onClick = { onChange("Kız") },
+                onClick = { onValueChange("Kız") },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (currentValue == "Kız") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = if (currentValue == "Kız") MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
@@ -357,7 +339,7 @@ private fun BabyGenderTextField(
                 Text("Kız")
             }
             Button(
-                onClick = { onChange("Erkek") },
+                onClick = { onValueChange("Erkek") },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (currentValue == "Erkek") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = if (currentValue == "Erkek") MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
@@ -367,6 +349,113 @@ private fun BabyGenderTextField(
                 Text("Erkek")
             }
         }
+    }
+}
+
+@Composable
+private fun BabyBirthDateTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    placeholder: String,
+    iconRes: Int
+) {
+    val context = LocalContext.current
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    if (showDatePicker) {
+        val calendar = Calendar.getInstance()
+
+        if (value.isNotEmpty()) {
+            try {
+                val dateParts = value.split("/")
+                if (dateParts.size == 3) {
+                    val day = dateParts[0].toInt()
+                    val month = dateParts[1].toInt() - 1
+                    val year = dateParts[2].toInt()
+                    calendar.set(year, month, day)
+                }
+            } catch (e: Exception) {
+                calendar.time = Date()
+            }
+        }
+
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val formattedDate = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year)
+                onValueChange(formattedDate)
+                showDatePicker = false
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).apply {
+            setOnDismissListener { showDatePicker = false }
+            datePicker.maxDate = System.currentTimeMillis()
+            val minCalendar = Calendar.getInstance()
+            minCalendar.add(Calendar.YEAR, -10)
+            datePicker.minDate = minCalendar.timeInMillis
+        }.show()
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .padding(bottom = 0.dp)
+                .padding(start = 16.dp),
+        )
+
+        OutlinedTextField(
+            value = value,
+            onValueChange = {},
+            placeholder = {
+                if (value.isEmpty()) {
+                    Text(
+                        text = placeholder,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(iconRes),
+                    contentDescription = "$label icon",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            trailingIcon = {
+                Icon(
+                    painter = painterResource(R.drawable.outline_calendar_month_24),
+                    contentDescription = "Takvim aç",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable { showDatePicker = true }
+                )
+            },
+            singleLine = true,
+            readOnly = true,
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurface
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize()
+                .clickable { showDatePicker = true }
+        )
     }
 }
 
@@ -576,8 +665,6 @@ fun BabyBloodTypeDropDownField(
     }
 }
 
-
-
 @Composable
 fun AlertDialogComponent(
     onDismiss: () -> Unit,
@@ -668,24 +755,5 @@ fun AlertDialogComponent(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun HideKeyboardOnTapAlternative(
-    content: @Composable () -> Unit
-) {
-    val focusManager = LocalFocusManager.current
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectTapGestures(onTap = {
-                    focusManager.clearFocus()
-                })
-            }
-    ) {
-        content()
     }
 }

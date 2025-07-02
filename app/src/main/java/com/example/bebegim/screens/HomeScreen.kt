@@ -218,7 +218,7 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.bell_24), // Video ikonu kullanın
+                            painter = painterResource(R.drawable.outline_downloading_24), // Video ikonu kullanın
                             contentDescription = "Video Yükleniyor",
                             tint = Color.White,
                             modifier = Modifier.size(48.dp)
