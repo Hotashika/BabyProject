@@ -20,7 +20,7 @@ class GetVideo {
         .callTimeout(0, TimeUnit.SECONDS)       // 0 = sınırsız, video akışı için ideal
         .build()
 
-    private val videoStreamUrl = "http://172.20.32.72:5000/video" // Gerekirse IP'yi güncelle
+    private val videoStreamUrl = "http://172.20.32.102:5000/video" // Gerekirse IP'yi güncelle
 
     fun getVideoStream(): Flow<Bitmap?> = flow {
         try {
