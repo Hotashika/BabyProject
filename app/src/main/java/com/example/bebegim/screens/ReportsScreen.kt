@@ -314,7 +314,6 @@ fun WeeklyReportContent() {
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // Haftalık Sıcaklık Trendleri
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
