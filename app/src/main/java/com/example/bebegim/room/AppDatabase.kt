@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.bebegim.room.DAO.AlertsDao
 import com.example.bebegim.room.DAO.BabiesDao
+import com.example.bebegim.room.DAO.BabiesDataDao
 import com.example.bebegim.room.DAO.ChatMessagesDao
 import com.example.bebegim.room.DAO.ChatSessionsDao
 import com.example.bebegim.room.DAO.DevelopmentMilestonesDao
@@ -24,6 +25,7 @@ import com.example.bebegim.room.DAO.VaccinationsDao
     entities = [
         Alerts::class,
         Babies::class,
+        BabiesData::class,
         ChatMessages::class ,
         ChatSessions::class,
         DevelopmentMilestones::class,
@@ -37,13 +39,14 @@ import com.example.bebegim.room.DAO.VaccinationsDao
         Users::class,
         Vaccinations::class
     ],
-    version = 1,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
 /*    abstract fun AlertsDao (): AlertsDao*/
     abstract fun BabiesDao(): BabiesDao
+    abstract fun BabiesDataDao(): BabiesDataDao
 /*    abstract fun ChatMessagesDao(): ChatMessagesDao
     abstract fun ChatSessionsDao(): ChatSessionsDao
     abstract fun FeedingRecordsDao(): FeedingRecordsDao*/
