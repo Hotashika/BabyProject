@@ -205,7 +205,6 @@ fun WeeklyReportContent() {
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // Weekly Temp Trends
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
