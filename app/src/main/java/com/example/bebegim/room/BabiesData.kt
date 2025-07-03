@@ -7,13 +7,13 @@ import androidx.room.PrimaryKey
 import java.util.UUID
 
 @Entity(
-    tableName = "BabiesData",
+    tableName = "babiesdata",
     indices = [Index(value = ["babyId"])],
     foreignKeys = [
         ForeignKey(
             entity = Babies::class,
-            parentColumns = ["BabyId"],
-            childColumns = ["BabyId"],
+            parentColumns = ["babyId"],
+            childColumns = ["babyId"],
             onDelete = ForeignKey.NO_ACTION
         )
     ]
