@@ -13,12 +13,40 @@ data class ThermalData(
     val meanTemperature: Double,
     val centerTemperature: Double,
     val thermalImageBase64: String?,
-    val shape: ThermalShape
+    val shape: ThermalShape,
+    val anatomicalAnalysis: AnatomicalAnalysis?
 )
 
 data class ThermalShape(
     val rows: Int,
     val cols: Int
+)
+
+data class AnatomicalAnalysis(
+    val headTemperature: Double,
+    val chestTemperature: Double,
+    val lowerBodyTemperature: Double,
+    val healthAssessment: HealthAssessment,
+    val regionStatistics: RegionStatistics
+)
+
+data class HealthAssessment(
+    val overall: String,
+    val warnings: List<String>,
+    val recommendations: List<String>
+)
+
+data class RegionStatistics(
+    val head: RegionStats,
+    val chest: RegionStats,
+    val lower: RegionStats
+)
+
+data class RegionStats(
+    val max: Double,
+    val min: Double,
+    val mean: Double,
+    val std: Double
 )
 
 class GetThermalData {
@@ -30,6 +58,27 @@ class GetThermalData {
             return@withContext thermalData?.maxTemperature
         } catch (e: Exception) {
             Log.e(TAG, "Sıcaklık verisi alınamadı: ${e.message}")
+            return@withContext null
+        }
+    }
+
+    suspend fun fetchHeadUpLowBodyTemperature(): Triple<Double, Double, Double>? = withContext(Dispatchers.IO) {
+        try {
+            val thermalData = fetchThermalData()
+            val anatomical = thermalData?.anatomicalAnalysis
+
+            if (anatomical != null) {
+                return@withContext Triple(
+                    anatomical.headTemperature,
+                    anatomical.chestTemperature,
+                    anatomical.lowerBodyTemperature
+                )
+            }
+
+            Log.w(TAG, "Anatomik analiz verisi bulunamadı")
+            return@withContext null
+        } catch (e: Exception) {
+            Log.e(TAG, "Anatomik sıcaklık verisi alınamadı: ${e.message}")
             return@withContext null
         }
     }
@@ -66,6 +115,66 @@ class GetThermalData {
                 cols = shapeJson.getInt("cols")
             )
 
+            // Anatomical analysis parsing
+            var anatomicalAnalysis: AnatomicalAnalysis? = null
+            if (json.has("anatomical_analysis")) {
+                try {
+                    val anatomicalJson = json.getJSONObject("anatomical_analysis")
+
+                    val headTemp = anatomicalJson.getDouble("head_temperature")
+                    val chestTemp = anatomicalJson.getDouble("chest_temperature")
+                    val lowerTemp = anatomicalJson.getDouble("lower_body_temperature")
+
+                    // Health assessment parsing
+                    val healthJson = anatomicalJson.getJSONObject("health_assessment")
+                    val overall = healthJson.getString("overall")
+                    val warningsArray = healthJson.getJSONArray("warnings")
+                    val recommendationsArray = healthJson.getJSONArray("recommendations")
+
+                    val warnings = mutableListOf<String>()
+                    for (i in 0 until warningsArray.length()) {
+                        warnings.add(warningsArray.getString(i))
+                    }
+
+                    val recommendations = mutableListOf<String>()
+                    for (i in 0 until recommendationsArray.length()) {
+                        recommendations.add(recommendationsArray.getString(i))
+                    }
+
+                    val healthAssessment = HealthAssessment(overall, warnings, recommendations)
+
+                    // Region statistics parsing
+                    val regionStatsJson = anatomicalJson.getJSONObject("region_statistics")
+
+                    fun parseRegionStats(regionJson: JSONObject): RegionStats {
+                        return RegionStats(
+                            max = regionJson.getDouble("max"),
+                            min = regionJson.getDouble("min"),
+                            mean = regionJson.getDouble("mean"),
+                            std = regionJson.getDouble("std")
+                        )
+                    }
+
+                    val headStats = parseRegionStats(regionStatsJson.getJSONObject("head"))
+                    val chestStats = parseRegionStats(regionStatsJson.getJSONObject("chest"))
+                    val lowerStats = parseRegionStats(regionStatsJson.getJSONObject("lower"))
+
+                    val regionStatistics = RegionStatistics(headStats, chestStats, lowerStats)
+
+                    anatomicalAnalysis = AnatomicalAnalysis(
+                        headTemperature = headTemp,
+                        chestTemperature = chestTemp,
+                        lowerBodyTemperature = lowerTemp,
+                        healthAssessment = healthAssessment,
+                        regionStatistics = regionStatistics
+                    )
+
+                    Log.d(TAG, "Anatomical Data - Head: $headTemp, Chest: $chestTemp, Lower: $lowerTemp")
+                } catch (e: Exception) {
+                    Log.w(TAG, "Anatomical analysis parsing failed: ${e.message}")
+                }
+            }
+
             Log.d(TAG, "Thermal Data - Max: $maxTemp, Min: $minTemp, Mean: $meanTemp")
 
             return@withContext ThermalData(
@@ -74,7 +183,8 @@ class GetThermalData {
                 meanTemperature = meanTemp,
                 centerTemperature = centerTemp,
                 thermalImageBase64 = thermalImage,
-                shape = shape
+                shape = shape,
+                anatomicalAnalysis = anatomicalAnalysis
             )
         } catch (e: Exception) {
             Log.e(TAG, "API çağrısı başarısız: ${e.message}")
