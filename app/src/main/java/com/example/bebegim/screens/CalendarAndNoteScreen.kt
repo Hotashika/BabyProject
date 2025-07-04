@@ -4,17 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -24,33 +14,24 @@ import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bebegim.data.NoteRepository
 import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
+import com.example.bebegim.viewModel.NotesViewModelFactory
+import com.example.bebegim.viewmodel.NotesViewModel
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -62,18 +43,23 @@ fun CalendarAndNoteScreen(
     onNavigateToChatbot: () -> Unit,
     onNavigateToReports: () -> Unit,
     onNavigateToThermalCamera: () -> Unit,
+    notesViewModel: NotesViewModel? = null,
+    userId: String = "testUser" // Buraya gerçek userId'yi verin
 ) {
     val isDark = isSystemInDarkTheme()
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
-
-    // Notları saklamak için map kullanıyoruz (gerçek uygulamada database veya ViewModel kullanılmalı)
-    var notes by remember { mutableStateOf<Map<LocalDate, String>>(emptyMap()) }
     var currentNote by remember { mutableStateOf("") }
     var isEditing by remember { mutableStateOf(false) }
 
-    // Tarih seçildiğinde notu yükle
-    LaunchedEffect(selectedDate) {
+    val context = LocalContext.current
+    val db = remember { com.example.bebegim.data.AppDatabase.getDatabase(context) }
+    val repository = remember { NoteRepository(db.noteDao()) }
+    val factory = remember { NotesViewModelFactory(repository, userId) }
+    val viewModel: NotesViewModel = notesViewModel ?: viewModel(factory = factory)
+    val notes by viewModel.notes.collectAsState()
+
+    LaunchedEffect(selectedDate, notes) {
         selectedDate?.let { date ->
             currentNote = notes[date] ?: ""
             isEditing = false
@@ -89,7 +75,7 @@ fun CalendarAndNoteScreen(
                 onReportsClick = onNavigateToReports,
                 onCalendarAndNotesClick = { },
                 onHomeClick = onNavigateBack,
-                onThermalCameraClick = onNavigateToThermalCamera, // <-- Add this line
+                onThermalCameraClick = onNavigateToThermalCamera,
             )
         }
     ) { paddingValues ->
@@ -201,15 +187,14 @@ fun CalendarAndNoteScreen(
                                 )
                             }
 
-                            // Düzenle Butonu
                             if (isEditing) {
                                 Row {
                                     IconButton(
                                         onClick = {
                                             if (currentNote.isBlank()) {
-                                                notes = notes - date
+                                                viewModel.deleteNoteByDate(date)
                                             } else {
-                                                notes = notes + (date to currentNote)
+                                                viewModel.saveNote(date, currentNote)
                                             }
                                             isEditing = false
                                         }
@@ -224,7 +209,7 @@ fun CalendarAndNoteScreen(
                                     if (notes.containsKey(date)) {
                                         IconButton(
                                             onClick = {
-                                                notes = notes - date
+                                                viewModel.deleteNoteByDate(date)
                                                 currentNote = ""
                                                 isEditing = false
                                             }
@@ -312,21 +297,12 @@ fun CalendarGrid(
     noteDates: Set<LocalDate> = emptySet()
 ) {
     val firstDayOfMonth = currentMonth.atDay(1)
-    val firstDayOfWeek = firstDayOfMonth.dayOfWeek.value % 7 // Monday = 1, make it 0-based starting from Monday
+    val firstDayOfWeek = firstDayOfMonth.dayOfWeek.value % 7
     val daysInMonth = currentMonth.lengthOfMonth()
 
-    // Create a list of dates including empty spaces for proper alignment
     val calendarDates = mutableListOf<LocalDate?>()
-
-    // Add empty spaces for days before the first day of the month
-    repeat(firstDayOfWeek) {
-        calendarDates.add(null)
-    }
-
-    // Add all days of the current month
-    for (day in 1..daysInMonth) {
-        calendarDates.add(currentMonth.atDay(day))
-    }
+    repeat(firstDayOfWeek) { calendarDates.add(null) }
+    for (day in 1..daysInMonth) calendarDates.add(currentMonth.atDay(day))
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(7),
@@ -359,11 +335,7 @@ fun CalendarDayItem(
         modifier = Modifier
             .aspectRatio(1f)
             .then(
-                if (date != null) {
-                    Modifier.clickable { onDateSelected(date) }
-                } else {
-                    Modifier
-                }
+                if (date != null) Modifier.clickable { onDateSelected(date) } else Modifier
             )
             .background(
                 color = when {
@@ -393,8 +365,6 @@ fun CalendarDayItem(
                     fontSize = 14.sp,
                     fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal
                 )
-
-                // Not göstergesi
                 if (hasNote && !isSelected) {
                     Box(
                         modifier = Modifier
@@ -417,6 +387,7 @@ fun CalendarAndNoteScreenPreview() {
         onNavigateBack = {},
         onNavigateToChatbot = {},
         onNavigateToReports = {},
-        onNavigateToThermalCamera = {}
+        onNavigateToThermalCamera = {},
+        userId = "testUser"
     )
 }

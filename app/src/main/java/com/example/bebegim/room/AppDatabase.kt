@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.bebegim.room.DAO.*
 import com.example.bebegim.room.DAO.AlertsDao
 import com.example.bebegim.room.DAO.BabiesDao
 import com.example.bebegim.room.DAO.BabiesDataDao
@@ -16,15 +17,12 @@ import com.example.bebegim.room.DAO.GrowthMeasurementDao
 import com.example.bebegim.room.DAO.MedicalHistoryDao
 import com.example.bebegim.room.DAO.SleepRecordDao
 import com.example.bebegim.roomEnhance.SystemLogs
-import com.example.bebegim.room.DAO.TemperatureReadingDao
-import com.example.bebegim.room.DAO.UsersDao
-import com.example.bebegim.room.DAO.VaccinationsDao
-
 
 @Database(
     entities = [
         Alerts::class,
         Babies::class,
+        ChatMessages::class,
         BabiesData::class,
         ChatMessages::class ,
         ChatSessions::class,
@@ -43,22 +41,12 @@ import com.example.bebegim.room.DAO.VaccinationsDao
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
-
-/*    abstract fun AlertsDao (): AlertsDao*/
     abstract fun BabiesDao(): BabiesDao
     abstract fun BabiesDataDao(): BabiesDataDao
 /*    abstract fun ChatMessagesDao(): ChatMessagesDao
     abstract fun ChatSessionsDao(): ChatSessionsDao
     abstract fun FeedingRecordsDao(): FeedingRecordsDao*/
     abstract fun UsersDao(): UsersDao
-/*    abstract fun DevelopmentMilestonesDao(): DevelopmentMilestonesDao
-    abstract fun DocumentEmbeddingsDao(): DocumentEmbeddingsDao
-    abstract fun GrowthMeasurementDao(): GrowthMeasurementDao
-    abstract fun MedicalHistoryDao(): MedicalHistoryDao
-    abstract fun SleepRecordDao(): SleepRecordDao
-    abstract fun SystemLogsDao(): SystemLogsDao
-    abstract fun TemperatureReadingDao(): TemperatureReadingDao
-    abstract fun VaccinationsDao(): VaccinationsDao*/
 
     companion object {
         @Volatile
@@ -71,7 +59,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "bebegim_db"
                 )
-                    .fallbackToDestructiveMigration()  // ← Geliştirme aşamasında ekleyin
+                    .fallbackToDestructiveMigration()
                     .build().also { INSTANCE = it }
             }
         }
