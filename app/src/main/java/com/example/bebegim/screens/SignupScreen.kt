@@ -103,7 +103,7 @@ fun SignupScreen(
         Spacer(modifier = Modifier.height(60.dp))
 
         SignupTextField(
-            value = fullName.uppercase(),
+            value = fullName,
             onValueChange = { fullName = it },
             label = "Ebeveyn Adı",
             iconRes = com.example.bebegim.R.drawable.user_24,

@@ -14,6 +14,7 @@ import com.example.bebegim.room.DAO.DocumentEmbeddingsDao
 import com.example.bebegim.room.DAO.FeedingRecordsDao
 import com.example.bebegim.room.DAO.GrowthMeasurementDao
 import com.example.bebegim.room.DAO.MedicalHistoryDao
+import com.example.bebegim.room.DAO.NotesDao
 import com.example.bebegim.room.DAO.SleepRecordDao
 import com.example.bebegim.roomEnhance.SystemLogs
 import com.example.bebegim.room.DAO.TemperatureReadingDao
@@ -26,39 +27,30 @@ import com.example.bebegim.room.DAO.VaccinationsDao
         Alerts::class,
         Babies::class,
         BabiesData::class,
-        ChatMessages::class ,
+        ChatMessages::class,
         ChatSessions::class,
         DevelopmentMilestones::class,
         DocumentEmbeddings::class,
         FeedingRecords::class,
         GrowthMeasurement::class,
         MedicalHistory::class,
+        Notes::class,
         SleepRecord::class,
         SystemLogs::class,
         TemperatureReading::class,
         Users::class,
         Vaccinations::class
     ],
-    version = 3,
+    version = 1,
     exportSchema = false
 )
+
 abstract class AppDatabase : RoomDatabase() {
 
-/*    abstract fun AlertsDao (): AlertsDao*/
     abstract fun BabiesDao(): BabiesDao
     abstract fun BabiesDataDao(): BabiesDataDao
-/*    abstract fun ChatMessagesDao(): ChatMessagesDao
-    abstract fun ChatSessionsDao(): ChatSessionsDao
-    abstract fun FeedingRecordsDao(): FeedingRecordsDao*/
+    abstract fun NotesDao(): NotesDao
     abstract fun UsersDao(): UsersDao
-/*    abstract fun DevelopmentMilestonesDao(): DevelopmentMilestonesDao
-    abstract fun DocumentEmbeddingsDao(): DocumentEmbeddingsDao
-    abstract fun GrowthMeasurementDao(): GrowthMeasurementDao
-    abstract fun MedicalHistoryDao(): MedicalHistoryDao
-    abstract fun SleepRecordDao(): SleepRecordDao
-    abstract fun SystemLogsDao(): SystemLogsDao
-    abstract fun TemperatureReadingDao(): TemperatureReadingDao
-    abstract fun VaccinationsDao(): VaccinationsDao*/
 
     companion object {
         @Volatile

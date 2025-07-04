@@ -62,6 +62,7 @@ import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
 import com.example.bebegim.room.AppDatabase
 import com.example.bebegim.room.Babies
+import com.example.bebegim.room.BabiesData
 import com.example.bebegim.ui.components.LoadingButton
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
@@ -98,6 +99,7 @@ fun RequestBabyInfo(
     }
     val usersDao = db.UsersDao()
     val babiesDao = db.BabiesDao()
+    val babiesDataDao = db.BabiesDataDao()
 
     val isDark = isSystemInDarkTheme()
     Column (
@@ -202,7 +204,7 @@ fun RequestBabyInfo(
                         authViewModel.signUpNewUser(
                             email = signupEmail,
                             password = signupPassword,
-                            fullName = signupFullName,
+                            fullName = signupFullName.uppercase(),
                             onSuccess = {
                                 onSignupSuccess(signupFullName, signupEmail, signupPassword)
                                 onBabyInfoSubmitted(true)
@@ -221,7 +223,16 @@ fun RequestBabyInfo(
                                             createdAt = java.time.Instant.now().toString(),
                                             updatedAt = null,
                                         )
+                                        val babiesData = BabiesData(
+                                            dataId = UUID.randomUUID().toString(),
+                                            babyId = babies.babyId,
+                                            weightHistory = listOf(babyWeight.toDoubleOrNull() ?: 0.0),
+                                            heightHistory = listOf(babyHeight.toDoubleOrNull() ?: 0.0),
+                                            createdAt = java.time.Instant.now().toString(),
+                                            updatedAt = null
+                                        )
                                         babiesDao.insert(babies)
+                                        babiesDataDao.insert(babiesData)
                                     }
                                 }
                             },
