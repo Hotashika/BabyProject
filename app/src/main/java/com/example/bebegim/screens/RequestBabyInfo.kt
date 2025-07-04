@@ -62,7 +62,6 @@ import com.example.bebegim.R
 import com.example.bebegim.auth.AuthViewModel
 import com.example.bebegim.room.AppDatabase
 import com.example.bebegim.room.Babies
-import com.example.bebegim.room.Users
 import com.example.bebegim.ui.components.LoadingButton
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
@@ -127,6 +126,7 @@ fun RequestBabyInfo(
             value = babyFullName.uppercase(),
             onValueChange = { babyFullName = it },
             label = "Bebeğinizin Adı",
+            shape = RoundedCornerShape(16.dp),
             placeholder = "Bebeğinizin Adını Giriniz",
             iconRes = R.drawable.user_24,
             keyboardType = KeyboardType.Text
@@ -137,13 +137,13 @@ fun RequestBabyInfo(
             onValueChange = { babyGender = it },
             label = "Cinsiyet",
             placeholder = "Cinsiyet Seçiniz",
-/*            iconRes = R.drawable.user_24*/
         )
 
         BabyBirthDateTextField(
             value = babyBirthDate,
             onValueChange = { babyBirthDate = it },
             label = "Doğum Tarihi",
+            shape = RoundedCornerShape(16.dp),
             placeholder = "GG/AA/YYYY",
             iconRes = R.drawable.cake_birthday_20,
             keyboardType = KeyboardType.Number
@@ -154,6 +154,7 @@ fun RequestBabyInfo(
             value = babyWeight,
             onValueChange = { babyWeight = it },
             label = "Kilo (kg)",
+            shape = RoundedCornerShape(16.dp),
             placeholder = "Bebeğinizin kilosunu giriniz",
             iconRes = R.drawable.scale_20,
             keyboardType = KeyboardType.Decimal
@@ -163,6 +164,7 @@ fun RequestBabyInfo(
             value = babyHeight,
             onValueChange = { babyHeight = it },
             label = "Boy (cm)",
+            shape = RoundedCornerShape(16.dp),
             placeholder = "Bebeğinizin boyunu giriniz",
             iconRes = R.drawable.measuring_tape_20,
             keyboardType = KeyboardType.Decimal
@@ -171,8 +173,7 @@ fun RequestBabyInfo(
         BabyBloodTypeDropDownField(
             value = babyBloodType,
             onValueChange = { babyBloodType = it },
-            label = "Kan Grubu",
-            iconRes = R.drawable.blood_20
+            label = "Kan Grubu"
         )
 
         Spacer(modifier = Modifier.padding(16.dp))
@@ -255,7 +256,8 @@ private fun BabyBirthDateTextField(
     label: String,
     placeholder: String,
     iconRes: Int,
-    keyboardType: KeyboardType
+    keyboardType: KeyboardType,
+    shape: RoundedCornerShape
 ) {
     Column(
         modifier = Modifier
@@ -314,7 +316,8 @@ private fun BabyFullNameTextField(
     label: String,
     placeholder: String,
     iconRes: Int,
-    keyboardType: KeyboardType
+    keyboardType: KeyboardType,
+    shape: RoundedCornerShape
 ) {
     Column (
         modifier = Modifier
@@ -428,7 +431,8 @@ private fun BabyWeightTextField(
     label: String,
     placeholder: String,
     iconRes: Int,
-    keyboardType: KeyboardType
+    keyboardType: KeyboardType,
+    shape: RoundedCornerShape
 ) {
     Column(
         modifier = Modifier
@@ -487,7 +491,8 @@ private fun BabyHeightTextField(
     label: String,
     placeholder: String,
     iconRes: Int,
-    keyboardType: KeyboardType
+    keyboardType: KeyboardType,
+    shape: RoundedCornerShape
 ) {
     Column(
         modifier = Modifier
@@ -544,8 +549,7 @@ private fun BabyHeightTextField(
 fun BabyBloodTypeDropDownField(
     value: String,
     onValueChange: (String) -> Unit,
-    label: String,
-    iconRes: Int
+    label: String
 ) {
     val items = listOf("A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-")
     var expanded by remember { mutableStateOf(false) }
@@ -570,13 +574,6 @@ fun BabyBloodTypeDropDownField(
                 readOnly = true,
                 value = value,
                 onValueChange = {},
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = iconRes),
-                        contentDescription = "$label icon",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
                 placeholder = {
                     Text(
                         text = "Kan grubu seçiniz",
@@ -586,7 +583,7 @@ fun BabyBloodTypeDropDownField(
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                 },
-                shape = RoundedCornerShape(16.dp),
+                /*shape = RoundedCornerShape(16.dp),*/
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
