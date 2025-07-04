@@ -22,4 +22,21 @@ interface BabiesDataDao : BaseDao<BabiesData> {
 
     @Update
     suspend fun updateBabiesData(data: BabiesData)
+
+    @Query("UPDATE babiesdata SET weightHistory = :weightHistory, heightHistory = :heightHistory, updatedAt = :updatedAt WHERE babyId = :babyId")
+    suspend fun updateBabiesDataByBabyId(
+        babyId: String,
+        weightHistory: List<Double>,
+        heightHistory: List<Double>,
+        updatedAt: String?
+    )
+    @Update
+    suspend fun updateByBabiesId(data: BabiesData){
+        updateBabiesDataByBabyId(
+            babyId = data.babyId,
+            weightHistory = data.weightHistory,
+            heightHistory = data.heightHistory,
+            updatedAt = data.updatedAt
+        )
+    }
 }

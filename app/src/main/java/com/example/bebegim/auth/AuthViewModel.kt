@@ -42,6 +42,16 @@ class AuthViewModel(private val usersDao: UsersDao) : ViewModel() {
         }
     }
 
+    suspend fun isEmailNotRegistered(email: String): Boolean {
+        return try {
+            val user = usersDao.getUserByEmail(email)
+            user == null
+        } catch (e: Exception) {
+            errorMessage = "Bu emaile ait hesap bulunamadı, lütfen hesap oluşturunuz: ${e.localizedMessage}"
+            false
+        }
+    }
+
     fun signInWithEmail(
         email: String,
         password: String,
