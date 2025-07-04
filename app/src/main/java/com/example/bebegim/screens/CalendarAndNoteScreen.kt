@@ -26,7 +26,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.bebegim.data.NoteRepository
 import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
@@ -53,18 +52,18 @@ fun CalendarAndNoteScreen(
     var isEditing by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val db = remember { com.example.bebegim.data.AppDatabase.getDatabase(context) }
-    val repository = remember { NoteRepository(db.noteDao()) }
-    val factory = remember { NotesViewModelFactory(repository, userId) }
-    val viewModel: NotesViewModel = notesViewModel ?: viewModel(factory = factory)
-    val notes by viewModel.notes.collectAsState()
+//    val db = remember { com.example.bebegim.data.AppDatabase.getDatabase(context) }
+//    val repository = remember { NoteRepository(db.noteDao()) }
+//    val factory = remember { NotesViewModelFactory(repository, userId) }
+//    val viewModel: NotesViewModel = notesViewModel ?: viewModel(factory = factory)
+//    val notes by viewModel.notes.collectAsState()
 
-    LaunchedEffect(selectedDate, notes) {
-        selectedDate?.let { date ->
-            currentNote = notes[date] ?: ""
-            isEditing = false
-        }
-    }
+//    LaunchedEffect(selectedDate, notes) {
+//        selectedDate?.let { date ->
+//            currentNote = notes[date] ?: ""
+//            isEditing = false
+//        }
+//    }
 
     Scaffold(
         containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
@@ -147,7 +146,7 @@ fun CalendarAndNoteScreen(
                 selectedDate = selectedDate,
                 onDateSelected = { selectedDate = it },
                 isDark = isDark,
-                noteDates = notes.keys.toSet()
+//                noteDates = notes.keys.toSet()
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -191,11 +190,11 @@ fun CalendarAndNoteScreen(
                                 Row {
                                     IconButton(
                                         onClick = {
-                                            if (currentNote.isBlank()) {
-                                                viewModel.deleteNoteByDate(date)
-                                            } else {
-                                                viewModel.saveNote(date, currentNote)
-                                            }
+//                                            if (currentNote.isBlank()) {
+//                                                viewModel.deleteNoteByDate(date)
+//                                            } else {
+//                                                viewModel.saveNote(date, currentNote)
+//                                            }
                                             isEditing = false
                                         }
                                     ) {
@@ -206,30 +205,30 @@ fun CalendarAndNoteScreen(
                                         )
                                     }
 
-                                    if (notes.containsKey(date)) {
-                                        IconButton(
-                                            onClick = {
-                                                viewModel.deleteNoteByDate(date)
-                                                currentNote = ""
-                                                isEditing = false
-                                            }
-                                        ) {
-                                            Icon(
-                                                Icons.Default.Delete,
-                                                contentDescription = "Sil",
-                                                tint = MaterialTheme.colorScheme.error
-                                            )
-                                        }
-                                    }
+//                                    if (notes.containsKey(date)) {
+//                                        IconButton(
+//                                            onClick = {
+//                                                viewModel.deleteNoteByDate(date)
+//                                                currentNote = ""
+//                                                isEditing = false
+//                                            }
+//                                        ) {
+//                                            Icon(
+//                                                Icons.Default.Delete,
+//                                                contentDescription = "Sil",
+//                                                tint = MaterialTheme.colorScheme.error
+//                                            )
+//                                        }
+//                                    }
                                 }
                             } else {
                                 TextButton(
                                     onClick = { isEditing = true }
                                 ) {
-                                    Text(
-                                        text = if (notes.containsKey(date)) "Düzenle" else "Not Ekle",
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
+//                                    Text(
+//                                        text = if (notes.containsKey(date)) "Düzenle" else "Not Ekle",
+//                                        color = MaterialTheme.colorScheme.primary
+//                                    )
                                 }
                             }
                         }
