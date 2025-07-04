@@ -1,5 +1,6 @@
 package com.example.bebegim.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -73,42 +74,25 @@ fun ThermalScreen(
     var headTemp by remember { mutableStateOf<Double?>(null) }
     var upperBodyTemp by remember { mutableStateOf<Double?>(null) }
     var lowerBodyTemp by remember { mutableStateOf<Double?>(null) }
-    remember { GetThermalData() }
-
-    /*LaunchedEffect(Unit) {
-        while (true) {
-            val temp = getThermalData.fetchHeadUpLowBodyTemperature()
-            if (temp != null) {
-                headTemp = temp.first
-                upperBodyTemp = temp.second
-                lowerBodyTemp = temp.third
-            } else {
-                headTemp = null
-                upperBodyTemp = null
-                lowerBodyTemp = null
-            }
-            delay(20000)
-        }
-    }*/
 
     val vitals = remember(headTemp, upperBodyTemp, lowerBodyTemp) {
         listOf(
             VitalData(
                 VitalType.BABY_HEAD_TEMPERATURE,
                 headTemp?.let { "%.1f°C".format(it) } ?: "Yükleniyor...",
-                getTemperatureStatus(headTemp),
+                getThermalTemperatureStatus(headTemp),
                 true
             ),
             VitalData(
                 VitalType.BABY_UPPERBODY_TEMPERATURE,
                 upperBodyTemp?.let { "%.1f°C".format(it) } ?: "Yükleniyor...",
-                getTemperatureStatus(upperBodyTemp),
+                getThermalTemperatureStatus(upperBodyTemp),
                 true
             ),
             VitalData(
                 VitalType.BABY_LOWERBODY_TEMPERATURE,
                 lowerBodyTemp?.let { "%.1f°C".format(it) } ?: "Yükleniyor...",
-                getTemperatureStatus(lowerBodyTemp),
+                getThermalTemperatureStatus(lowerBodyTemp),
                 true
             )
         )
@@ -127,16 +111,39 @@ fun ThermalScreen(
                 if (data != null) {
                     thermalData = data
                     imageUrl = url
+
+                    // Anatomical analysis verilerini al
+                    data.anatomicalAnalysis?.let { anatomical ->
+                        headTemp = anatomical.headTemperature
+                        upperBodyTemp = anatomical.chestTemperature
+                        lowerBodyTemp = anatomical.lowerBodyTemperature
+
+                        Log.d("ThermalScreen", "Head: $headTemp, Chest: $upperBodyTemp, Lower: $lowerBodyTemp")
+                    } ?: run {
+                        // Anatomical analysis yoksa null yap
+                        headTemp = null
+                        upperBodyTemp = null
+                        lowerBodyTemp = null
+                        Log.w("ThermalScreen", "Anatomical analysis data not available")
+                    }
                 } else {
                     errorMessage = "Veri alınamadı"
+                    // Veri yoksa null yap
+                    headTemp = null
+                    upperBodyTemp = null
+                    lowerBodyTemp = null
                 }
             } catch (e: Exception) {
                 errorMessage = "Hata: ${e.message}"
+                headTemp = null
+                upperBodyTemp = null
+                lowerBodyTemp = null
+                Log.e("ThermalScreen", "Error fetching thermal data", e)
             } finally {
                 isLoading = false
             }
 
-            // 20 saniyede bir güncelle
+            // 10 saniyede bir güncelle
             delay(10000)
         }
     }
@@ -176,7 +183,6 @@ fun ThermalScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState()),
-
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
@@ -273,17 +279,15 @@ fun ThermalScreen(
                 ThermalVitals(vitals[1], modifier = Modifier.weight(1f))
                 ThermalVitals(vitals[2], modifier = Modifier.weight(1f))
             }
-
-
         }
     }
 }
 
 @Composable
-fun ThermalVitals(vital : VitalData, modifier: Modifier = Modifier) {
+fun ThermalVitals(vital: VitalData, modifier: Modifier = Modifier) {
     val colorScheme = MaterialTheme.colorScheme
 
-    Card (
+    Card(
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
@@ -342,6 +346,16 @@ fun ThermalBottomBar(
         onHomeClick = onNavigateBack,
         onThermalCameraClick = { }
     )
+}
+
+// Sıcaklık durumunu belirleyen fonksiyon
+private fun getThermalTemperatureStatus(temperature: Double?): String {
+    return when {
+        temperature == null -> "Bilinmiyor"
+        temperature < 36.0 -> "Düşük"
+        temperature > 37.5 -> "Yüksek"
+        else -> "Normal"
+    }
 }
 
 @Preview(showBackground = true)

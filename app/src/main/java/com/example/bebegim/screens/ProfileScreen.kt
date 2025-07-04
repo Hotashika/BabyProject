@@ -9,13 +9,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,6 +26,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -40,20 +41,13 @@ import com.example.bebegim.ui.theme.PastelBlueWhite
 import com.example.bebegim.ui.theme.Poppins
 import com.example.bebegim.viewModel.ProfileViewModel
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.text.get
 
-data class BabyInfo(
-    val name: String = "",
-    val birthDate: String = "",
-    val gender: String = "",
-    val weight: String = "",
-    val height: String = "",
-    val bloodType: String = ""
-)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -295,13 +289,23 @@ fun calculateBabyAge(birthDateString: String): String {
         val birthDate = LocalDate.parse(birthDateString, formatter)
         val today = LocalDate.now()
         val period = Period.between(birthDate, today)
+
+        if (period.years == 0) return "${period.months} ay ${period.days} gün"
+
         period.years.toString()
     } catch (e: Exception) {
         "-1"
     }
 }
 
-
+data class BabyInfo(
+    val name: String = "",
+    val birthDate: String = "",
+    val gender: String = "",
+    val weight: String = "",
+    val height: String = "",
+    val bloodType: String = ""
+)
 
 @Composable
 fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
@@ -310,13 +314,17 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
-
     val db = remember {
         AppDatabase.getInstance(context)
     }
     val babiesDao = db.BabiesDao()
-
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(isEditing) {
+        if (isEditing) {
+            editableBabyInfo = babyInfo
+        }
+    }
 
     // Date picker dialog for editing
     val datePickerDialog = DatePickerDialog(
@@ -336,6 +344,7 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     ) {
+        // Header with title and save button
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
@@ -348,10 +357,22 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
             if (isEditing) {
                 IconButton(onClick = {
                     isEditing = false
-                    // Save changes if needed
                     scope.launch {
-                        if (babyId != null) {
-                            babiesDao.updateBabyById(babyId, editableBabyInfo.name, editableBabyInfo.birthDate)
+                        try {
+                            if (babyId != null) {
+                                babiesDao.updateBabyById(
+                                    babyId = babyId,
+                                    name = editableBabyInfo.name,
+                                    birthDate = editableBabyInfo.birthDate,
+                                    gender = editableBabyInfo.gender,
+                                    weight = editableBabyInfo.weight.toDoubleOrNull(),
+                                    height = editableBabyInfo.height.toDoubleOrNull(),
+                                    bloodType = editableBabyInfo.bloodType,
+                                    updatedAt = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+                                )
+                            }
+                        } catch (e: Exception) {
+                            println("Error updating baby info: ${e.localizedMessage}")
                         }
                     }
                 }) {
@@ -362,13 +383,17 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
                 }
             }
         }
+
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Main card
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
+                // Baby name section
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -394,9 +419,6 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
                         )
                     }
                     IconButton(onClick = {
-                        if (isEditing) {
-                            editableBabyInfo = babyInfo // Reset changes
-                        }
                         isEditing = !isEditing
                     }) {
                         Icon(
@@ -405,84 +427,149 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
                         )
                     }
                 }
-                Divider(modifier = Modifier.padding(vertical = 8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    if (isEditing) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            OutlinedTextField(
-                                value = editableBabyInfo.birthDate,
-                                onValueChange = { },
-                                label = { Text("Doğum Tarihi") },
-                                modifier = Modifier.fillMaxWidth(),
-                                readOnly = true,
-                                trailingIcon = {
-                                    IconButton(onClick = { datePickerDialog.show() }) {
-                                        Icon(
-                                            imageVector = Icons.Default.DateRange,
-                                            contentDescription = "Tarih Seç"
-                                        )
-                                    }
+
+                Divider(modifier = Modifier.padding(vertical = 16.dp))
+
+                if (isEditing) {
+                    // Editing mode - vertical layout to prevent overlapping
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Birth date field
+                        OutlinedTextField(
+                            value = editableBabyInfo.birthDate,
+                            onValueChange = { },
+                            label = { Text("Doğum Tarihi") },
+                            modifier = Modifier.fillMaxWidth(),
+                            readOnly = true,
+                            trailingIcon = {
+                                IconButton(onClick = { datePickerDialog.show() }) {
+                                    Icon(
+                                        imageVector = Icons.Default.DateRange,
+                                        contentDescription = "Tarih Seç"
+                                    )
                                 }
+                            }
+                        )
+
+                        // Gender selection
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Cinsiyet",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    RadioButton(
+                                        selected = editableBabyInfo.gender == "Erkek",
+                                        onClick = { editableBabyInfo = editableBabyInfo.copy(gender = "Erkek") }
+                                    )
+                                    Text("Erkek")
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    RadioButton(
+                                        selected = editableBabyInfo.gender == "Kız",
+                                        onClick = { editableBabyInfo = editableBabyInfo.copy(gender = "Kız") }
+                                    )
+                                    Text("Kız")
+                                }
+                            }
+                        }
+
+                        // Weight, Height, Blood Type in a row
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = editableBabyInfo.weight,
+                                onValueChange = { editableBabyInfo = editableBabyInfo.copy(weight = it) },
+                                label = { Text("Kilo (kg)") },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            )
+                            OutlinedTextField(
+                                value = editableBabyInfo.height,
+                                onValueChange = { editableBabyInfo = editableBabyInfo.copy(height = it) },
+                                label = { Text("Boy (cm)") },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                             )
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Cinsiyet")
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                RadioButton(
-                                    selected = editableBabyInfo.gender == "Erkek",
-                                    onClick = { editableBabyInfo = editableBabyInfo.copy(gender = "Erkek") }
-                                )
-                                Text("Erkek")
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                RadioButton(
-                                    selected = editableBabyInfo.gender == "Kız",
-                                    onClick = { editableBabyInfo = editableBabyInfo.copy(gender = "Kız") }
-                                )
-                                Text("Kız")
-                            }
-                        }
-                    } else {
-                        val age = calculateBabyAge(babyInfo.birthDate)
-                        InfoItem(label = "Yaş", value = age)
-                        InfoItem(label = "Doğum Tarihi", value = babyInfo.birthDate)
-                        InfoItem(label = "Cinsiyet", value = babyInfo.gender)
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    if (isEditing) {
-                        OutlinedTextField(
-                            value = editableBabyInfo.weight,
-                            onValueChange = { editableBabyInfo = editableBabyInfo.copy(weight = it) },
-                            label = { Text("Kilo") },
-                            modifier = Modifier.weight(1f)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        OutlinedTextField(
-                            value = editableBabyInfo.height,
-                            onValueChange = { editableBabyInfo = editableBabyInfo.copy(height = it) },
-                            label = { Text("Boy") },
-                            modifier = Modifier.weight(1f)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        OutlinedTextField(
+
+                        // Blood type dropdown
+                        BabyBloodTypeDropDownField(
                             value = editableBabyInfo.bloodType,
-                            onValueChange = { editableBabyInfo = editableBabyInfo.copy(bloodType = it) },
-                            label = { Text("Kan Grubu") },
-                            modifier = Modifier.weight(1f)
+                            onValueChange = { selected: String ->
+                                editableBabyInfo = editableBabyInfo.copy(bloodType = selected)
+                            },
+                            label = "Kan Grubu",
+                            iconRes = R.drawable.blood_24
                         )
-                    } else {
-                        InfoItem(label = "Kilo", value = babyInfo.weight)
-                        InfoItem(label = "Boy", value = babyInfo.height)
-                        InfoItem(label = "Kan Grubu", value = babyInfo.bloodType)
+                    }
+                } else {
+                    // Display mode - grid layout for better organization
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // First row: Age, Birth Date, Gender
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            val age = calculateBabyAge(babyInfo.birthDate)
+                            InfoItem(
+                                label = "Yaş",
+                                value = if (age != "-1") age else "Belirtilmemiş",
+                                modifier = Modifier.weight(1f)
+                            )
+                            InfoItem(
+                                label = "Doğum Tarihi",
+                                value = babyInfo.birthDate.ifEmpty { "Belirtilmemiş" },
+                                modifier = Modifier.weight(1f)
+                            )
+                            InfoItem(
+                                label = "Cinsiyet",
+                                value = babyInfo.gender.ifEmpty { "Belirtilmemiş" },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        // Second row: Weight, Height, Blood Type
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            InfoItem(
+                                label = "Kilo",
+                                value = if (babyInfo.weight.isNotEmpty()) "${babyInfo.weight} kg" else "Belirtilmemiş",
+                                modifier = Modifier.weight(1f)
+                            )
+                            InfoItem(
+                                label = "Boy",
+                                value = if (babyInfo.height.isNotEmpty()) "${babyInfo.height} cm" else "Belirtilmemiş",
+                                modifier = Modifier.weight(1f)
+                            )
+                            InfoItem(
+                                label = "Kan Grubu",
+                                value = babyInfo.bloodType.ifEmpty { "Belirtilmemiş" },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
             }
@@ -493,17 +580,24 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
 @Composable
 fun InfoItem(
     label: String,
-    value: String
+    value: String,
+    modifier: Modifier = Modifier
 ) {
-    Column {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
         )
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center
         )
     }
 }
