@@ -4,22 +4,11 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.bebegim.room.DAO.AlertsDao
 import com.example.bebegim.room.DAO.BabiesDao
 import com.example.bebegim.room.DAO.BabiesDataDao
-import com.example.bebegim.room.DAO.ChatMessagesDao
-import com.example.bebegim.room.DAO.ChatSessionsDao
-import com.example.bebegim.room.DAO.DevelopmentMilestonesDao
-import com.example.bebegim.room.DAO.DocumentEmbeddingsDao
-import com.example.bebegim.room.DAO.FeedingRecordsDao
-import com.example.bebegim.room.DAO.GrowthMeasurementDao
-import com.example.bebegim.room.DAO.MedicalHistoryDao
 import com.example.bebegim.room.DAO.NotesDao
-import com.example.bebegim.room.DAO.SleepRecordDao
-import com.example.bebegim.roomEnhance.SystemLogs
-import com.example.bebegim.room.DAO.TemperatureReadingDao
 import com.example.bebegim.room.DAO.UsersDao
-import com.example.bebegim.room.DAO.VaccinationsDao
+import com.example.bebegim.roomEnhance.SystemLogs
 
 
 @Database(

@@ -1,7 +1,6 @@
 package com.example.bebegim.room
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 
 
 @Entity(

@@ -5,7 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -23,7 +23,6 @@ import com.example.bebegim.screens.ReportsScreen
 import com.example.bebegim.screens.RequestBabyInfo
 import com.example.bebegim.screens.SignupScreen
 import com.example.bebegim.screens.ThermalScreen
-import androidx.compose.ui.platform.LocalContext
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")

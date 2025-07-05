@@ -39,13 +39,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bebegim.auth.AuthViewModel
 import com.example.bebegim.auth.AuthViewModelFactory
 import com.example.bebegim.room.AppDatabase
-import com.example.bebegim.room.DAO.UsersDao
 import com.example.bebegim.ui.components.LoadingButton
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite

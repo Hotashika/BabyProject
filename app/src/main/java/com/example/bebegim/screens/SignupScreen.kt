@@ -46,7 +46,6 @@ import com.example.bebegim.room.DAO.UsersDao
 import com.example.bebegim.ui.components.LoadingButton
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
-import kotlin.compareTo
 
 class AuthViewModelFactory(private val usersDao: UsersDao) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
