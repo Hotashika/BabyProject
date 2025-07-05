@@ -8,7 +8,7 @@ import com.example.bebegim.room.Notes
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface NotesDao {
+interface NotesDao: BaseDao<Notes> {
     @Query("SELECT * FROM notes ORDER BY createdAt DESC")
     fun getAllNotes(): Flow<List<Notes>>
 

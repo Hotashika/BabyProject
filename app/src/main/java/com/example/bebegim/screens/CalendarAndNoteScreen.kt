@@ -29,8 +29,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bebegim.ui.components.BottomNavBar
 import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
-import com.example.bebegim.viewModel.NotesViewModelFactory
-import com.example.bebegim.viewmodel.NotesViewModel
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -41,9 +39,7 @@ fun CalendarAndNoteScreen(
     onNavigateBack: () -> Unit,
     onNavigateToChatbot: () -> Unit,
     onNavigateToReports: () -> Unit,
-    onNavigateToThermalCamera: () -> Unit,
-    notesViewModel: NotesViewModel? = null,
-    userId: String = "testUser" // Buraya gerçek userId'yi verin
+    onNavigateToThermalCamera: () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
@@ -52,18 +48,6 @@ fun CalendarAndNoteScreen(
     var isEditing by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-//    val db = remember { com.example.bebegim.data.AppDatabase.getDatabase(context) }
-//    val repository = remember { NoteRepository(db.noteDao()) }
-//    val factory = remember { NotesViewModelFactory(repository, userId) }
-//    val viewModel: NotesViewModel = notesViewModel ?: viewModel(factory = factory)
-//    val notes by viewModel.notes.collectAsState()
-
-//    LaunchedEffect(selectedDate, notes) {
-//        selectedDate?.let { date ->
-//            currentNote = notes[date] ?: ""
-//            isEditing = false
-//        }
-//    }
 
     Scaffold(
         containerColor = if (isDark) DarkPastelBlue else PastelBlueWhite,
@@ -146,7 +130,6 @@ fun CalendarAndNoteScreen(
                 selectedDate = selectedDate,
                 onDateSelected = { selectedDate = it },
                 isDark = isDark,
-//                noteDates = notes.keys.toSet()
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -204,31 +187,12 @@ fun CalendarAndNoteScreen(
                                             tint = MaterialTheme.colorScheme.primary
                                         )
                                     }
-
-//                                    if (notes.containsKey(date)) {
-//                                        IconButton(
-//                                            onClick = {
-//                                                viewModel.deleteNoteByDate(date)
-//                                                currentNote = ""
-//                                                isEditing = false
-//                                            }
-//                                        ) {
-//                                            Icon(
-//                                                Icons.Default.Delete,
-//                                                contentDescription = "Sil",
-//                                                tint = MaterialTheme.colorScheme.error
-//                                            )
-//                                        }
-//                                    }
                                 }
                             } else {
                                 TextButton(
                                     onClick = { isEditing = true }
                                 ) {
-//                                    Text(
-//                                        text = if (notes.containsKey(date)) "Düzenle" else "Not Ekle",
-//                                        color = MaterialTheme.colorScheme.primary
-//                                    )
+
                                 }
                             }
                         }
@@ -377,16 +341,4 @@ fun CalendarDayItem(
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun CalendarAndNoteScreenPreview() {
-    CalendarAndNoteScreen(
-        onNavigateBack = {},
-        onNavigateToChatbot = {},
-        onNavigateToReports = {},
-        onNavigateToThermalCamera = {},
-        userId = "testUser"
-    )
 }

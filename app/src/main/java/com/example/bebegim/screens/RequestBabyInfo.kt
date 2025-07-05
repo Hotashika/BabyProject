@@ -51,7 +51,8 @@ fun BirthDatePickerField(
     onValueChange: (String) -> Unit,
     label: String,
     placeholder: String,
-    iconRes: Int
+    iconRes: Int,
+    shape: RoundedCornerShape
 ) {
     val context = LocalContext.current
     var showDatePicker by remember { mutableStateOf(false) }
