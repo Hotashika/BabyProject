@@ -40,13 +40,14 @@ import com.example.bebegim.ui.theme.DarkPastelBlue
 import com.example.bebegim.ui.theme.PastelBlueWhite
 import com.example.bebegim.ui.theme.Poppins
 import com.example.bebegim.viewModel.ProfileViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.text.get
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,17 +74,26 @@ fun ProfileScreen(
             return ProfileViewModel(usersDao) as T
         }
     })
+
     LaunchedEffect(email) {
         profileViewModel.loadUserByEmail(email)
     }
-    val user = profileViewModel.user.value
 
+    val user = profileViewModel.user.value
     val userId = user?.userId
-    val babies by if (userId != null) {
-        babiesDao.getBabiesByUserId(userId).collectAsState(initial = emptyList())
-    } else {
-        remember { mutableStateOf(emptyList<com.example.bebegim.room.Babies>()) }
+
+    // Bebek verilerini State olarak tut
+    var babies by remember { mutableStateOf(emptyList<com.example.bebegim.room.Babies>()) }
+
+    // Bebek verilerini yükle
+    LaunchedEffect(userId) {
+        if (userId != null) {
+            babiesDao.getBabiesByUserId(userId).collect { babyList ->
+                babies = babyList
+            }
+        }
     }
+
     val baby = babies.firstOrNull()
 
     Scaffold(
@@ -133,7 +143,18 @@ fun ProfileScreen(
                         bloodType = it.bloodType ?: ""
                     )
                 } ?: BabyInfo(),
-                babyId = baby?.babyId
+                babyId = baby?.babyId,
+                onBabyInfoUpdated = {
+                    // Bebek bilgileri güncellendiğinde verileri yeniden yükle
+                    if (userId != null) {
+                        // Coroutine içinde yeniden yükle
+                        CoroutineScope(Dispatchers.IO).launch {
+                            babiesDao.getBabiesByUserId(userId).collect { babyList ->
+                                babies = babyList
+                            }
+                        }
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             SettingsSection(
@@ -142,7 +163,6 @@ fun ProfileScreen(
                 onLogout = onLogout,
                 onNavigateToChatbot = onNavigateToChatbot
             )
-
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -308,7 +328,11 @@ data class BabyInfo(
 )
 
 @Composable
-fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
+fun BabyInformationDisplay(
+    babyInfo: BabyInfo,
+    babyId: String? = null,
+    onBabyInfoUpdated: () -> Unit
+) {
     var isEditing by remember { mutableStateOf(false) }
     var editableBabyInfo by remember { mutableStateOf(babyInfo) }
 
@@ -517,7 +541,7 @@ fun BabyInformationDisplay(babyInfo: BabyInfo, babyId: String? = null) {
                                 editableBabyInfo = editableBabyInfo.copy(bloodType = selected)
                             },
                             label = "Kan Grubu",
-                            iconRes = R.drawable.blood_24
+                            /*iconRes = R.drawable.blood_24*/
                         )
                     }
                 } else {
