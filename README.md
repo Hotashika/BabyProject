@@ -42,7 +42,8 @@ BabyGuard is a comprehensive Android application designed to help parents monito
 This project was developed by a team for **Teknofest**.
 - **[Hotashika]** 
 - **[burakguducu]** 
-- **[iremmiy]** 
+- **[iremmiy]**
+- **[EmreYigitOzturk]** 
 
 ## 📦 Installation
 
