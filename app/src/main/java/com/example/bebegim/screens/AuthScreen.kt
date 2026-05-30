@@ -63,7 +63,6 @@ fun AuthScreen(
     authViewModel.isLoadingLogin
     authViewModel.errorMessage
 
-    // Animasyon değişkenleri
     val logoAlpha = remember { Animatable(0f) }
     val logoScale = remember { Animatable(0.3f) }
     val titleAlpha = remember { Animatable(0f) }
@@ -95,7 +94,6 @@ fun AuthScreen(
 
         delay(300)
 
-        // Başlık animasyonu
         launch {
             titleAlpha.animateTo(
                 targetValue = 1f,
@@ -111,7 +109,6 @@ fun AuthScreen(
 
         delay(400)
 
-        // Butonlar animasyonu
         launch {
             buttonsAlpha.animateTo(
                 targetValue = 1f,
@@ -127,7 +124,6 @@ fun AuthScreen(
 
         delay(200)
 
-        // Copyright animasyonu
         copyrightAlpha.animateTo(
             targetValue = 1f,
             animationSpec = tween(durationMillis = 400)
@@ -142,7 +138,6 @@ fun AuthScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Logo veya ikon alanı
         Icon(
             painter = painterResource(id = R.drawable.babyguard_profile_photo_v2),
             contentDescription = "BabyGuard Logo",

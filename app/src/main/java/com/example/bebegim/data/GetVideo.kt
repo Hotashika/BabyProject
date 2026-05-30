@@ -15,12 +15,12 @@ import java.util.concurrent.TimeUnit
 
 class GetVideo {
     private val client = OkHttpClient.Builder()
-        .readTimeout(30, TimeUnit.SECONDS)      // 5 yerine 30 saniye
-        .connectTimeout(10, TimeUnit.SECONDS)   // 3 yerine 10 saniye
-        .callTimeout(0, TimeUnit.SECONDS)       // 0 = sınırsız, video akışı için ideal
+        .readTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .callTimeout(0, TimeUnit.SECONDS)
         .build()
 
-    private val videoStreamUrl = "http://172.20.32.102:5000/video" // Gerekirse IP'yi güncelle
+    private val videoStreamUrl = "http://172.20.32.102:5000/video"
 
     fun getVideoStream(): Flow<Bitmap?> = flow {
         try {
@@ -78,7 +78,7 @@ class GetVideo {
                 if (data.contains(boundary)) {
                     if (boundaryFound && frameBuffer.size() > 0) {
                         frameCount++
-                        if (frameCount % 2 == 0) { // Her 2. frame’i işliyoruz
+                        if (frameCount % 2 == 0) {
                             processFrame(frameBuffer.toByteArray(), onFrameReady)
                         }
                         frameBuffer.reset()

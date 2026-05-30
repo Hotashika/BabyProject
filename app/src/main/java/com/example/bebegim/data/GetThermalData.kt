@@ -115,7 +115,6 @@ class GetThermalData {
                 cols = shapeJson.getInt("cols")
             )
 
-            // Anatomical analysis parsing
             var anatomicalAnalysis: AnatomicalAnalysis? = null
             if (json.has("anatomical_analysis")) {
                 try {
@@ -125,7 +124,6 @@ class GetThermalData {
                     val chestTemp = anatomicalJson.getDouble("chest_temperature")
                     val lowerTemp = anatomicalJson.getDouble("lower_body_temperature")
 
-                    // Health assessment parsing
                     val healthJson = anatomicalJson.getJSONObject("health_assessment")
                     val overall = healthJson.getString("overall")
                     val warningsArray = healthJson.getJSONArray("warnings")
@@ -194,7 +192,6 @@ class GetThermalData {
 
     suspend fun fetchThermalImageUrl(): String? = withContext(Dispatchers.IO) {
         try {
-            // Timestamp ekleyerek cache'i bypass et
             val timestamp = System.currentTimeMillis()
             return@withContext "http://10.0.2.2:8000/thermal/image?t=$timestamp"
         } catch (e: Exception) {

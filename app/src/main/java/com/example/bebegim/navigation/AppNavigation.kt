@@ -46,12 +46,11 @@ fun AppNavigation() {
     var signupEmail by remember { mutableStateOf("") }
     var signupPassword by remember { mutableStateOf("") }
 
-    // Add context and db for ViewModelFactory usage
     val context = LocalContext.current
     val db = remember { AppDatabase.getInstance(context) }
     val usersDao = db.UsersDao()
 
-    NavHost(navController = navController, startDestination = Screen.Auth.route) {
+        NavHost(navController = navController, startDestination = Screen.Auth.route) {
         composable(Screen.Auth.route) {
             AuthScreen(
                 onNavigateToLogin = {
